@@ -1,0 +1,133 @@
+.survey1-container {
+  display: flex;
+  height: 100vh;
+  background-color: #fff;
+  position: relative;
+}
+
+.survey1-header {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+}
+
+.survey1-logo {
+  height: 70px;
+}
+
+.survey1-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 40px;
+  width: 60%;
+  position: relative;
+}
+
+.survey1-question {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.survey1-question h2 {
+  font-family: 'Roboto Serif', serif;
+  font-weight: 700;
+  font-size: 30px;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #000000;
+  border-radius: 4px;
+}
+
+.input-recommendation {
+  font-size: 12px;
+  color: #666;
+  float: right;
+}
+
+button1 {
+  background-color: #008489;
+  color: white;
+  padding: 12px 35px;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: regular;
+}
+
+.survey1-image {
+  width: 40%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(white, #f0f0f0);
+  overflow: hidden;
+}
+
+.survey1-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.progress-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 40px;
+  width: calc(60% - 0px);
+  height: 4px;
+  background-color: #e0e0e0;
+}
+
+.progress {
+  height: 100%;
+  background-color: #008489;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.back-button {
+  margin-top: 15px;
+  position: absolute;
+  bottom: 40px;
+  left: 20px;
+  background-color: transparent;
+  color: #008489;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.back-button1 {
+  margin-top: 15px;
+  position: absolute;
+  bottom: 40px;
+  left: 20px;
+  background-color: transparent;
+  border: none;
+  font-size: 16px;
+  padding: 0;
+  color: #ccc; /* Light gray color */
+  pointer-events: none; /* Disable the button */
+}

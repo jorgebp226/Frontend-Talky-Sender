@@ -1,0 +1,1130 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Serif:wght@400&display=swap');
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #f6f6f4;
+}
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  overflow: visible;
+}
+
+.sidebar-logo {
+  margin-bottom: 30px;
+}
+
+.sidebar-logo img {
+  width: 100px;
+}
+
+.quick-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #e8f0fe;
+  border: 4px solid #1a73e8;
+  border-radius: 20px;
+  text-decoration: none;
+  color: #1a73e8;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.quick-action-button:hover {
+  background-color: #d2e3fc;
+}
+
+.quick-action-button img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #5f6368;
+}
+
+.info-icon {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #5f6368;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  text-decoration: none;
+  color: #241C19;
+  font-weight: 500;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-nav a:hover {
+  background-color: #f1f3f4;
+}
+
+.sidebar-nav a img {
+  margin-right: 15px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Main content styles */
+.main-content {
+  z-index: 1;
+  flex-grow: 1;
+  width: auto;
+  margin-left: 250px;
+  margin-right: 0px;
+  box-sizing: border-box;
+  padding: 0px;
+  overflow-x: hidden;
+}
+
+.quick-actions,
+.performance,
+.income {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 40px; /* Esto establece el padding superior e inferior a 0 y el padding izquierdo y derecho a 40px */
+  background-color: #ffffff00;
+  margin-bottom: 10px;
+}
+
+.main-header-dashboard{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 40px;
+  background-color: #ffffff00;
+  margin-bottom: 0px;
+  position: sticky;
+  top: 0;
+} 
+
+.first-shipment{
+  width: 100%;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 0px;
+  background-color: #ffffff;
+  margin-bottom: 30px;
+  margin-top: 0px;
+}
+
+.main-header-dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color:#ffffff;
+  border-bottom: 2px solid #e0e0e0;
+  height: 80px;
+}
+
+.main-header-dashboard h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #202124;
+  margin: 0;
+}
+
+.user-profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.first-shipment {
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0px;
+  background-color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.first-shipment-inner {
+  max-width: 1200px; /* Ajusta el ancho máximo según tus necesidades */
+  margin: 0 auto;
+  padding: 20px; /* Añade el padding que necesites */
+  box-sizing: border-box;
+}
+
+/* Mantén los estilos existentes o ajustados de first-shipment */
+.first-shipment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.first-shipment-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #202124;
+  margin-left: 20px;
+}
+
+.shipment-description {
+  font-size: 14px;
+  color: #5f6368;
+  margin-left: 20px;
+}
+
+.steps-progress {
+  font-size: 14px;
+  color: #5f6368;
+  background-color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 15px;
+}
+
+.shipment-steps {
+  display: flex;
+  flex-direction: column;
+}
+
+.shipment-step {
+  border-top: 1px solid #e0e0e0;
+  padding: 15px 0;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 18px;
+  color: #007c89;
+  margin-left: 20px;
+}
+
+.arrow {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.step-content {
+  display: none;
+  padding: 10px 0;
+  font-size: 14px;
+  color: #5f6368;
+}
+
+.step-content.active {
+  display: block;
+}
+
+/* Phone step content styles */
+.phone-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.phone-step-content h3 {
+  font-family: 'Roboto Serif', serif;
+  font-size: 29px;
+  font-weight: 400;
+  color: #000000;
+  margin-bottom: 20px;
+  max-width: 55%;
+}
+
+.whatsapp-image-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 30px;
+  background-color: transparent;
+}
+
+.whatsapp-instructions {
+  flex: 1;
+  padding-right: 20px;
+  width: 25%;
+  margin: 0;
+  text-align: center;
+  max-width: 50%;
+}
+
+.whatsapp-instructions p {
+  font-size: 16px;
+  color: #303030;
+  margin-bottom: 20px;
+  max-width: 100%;
+}
+
+.whatsapp-screenshot {
+  max-width: 45%;
+  height: auto;
+  border-radius: 8px;
+  background-color: transparent;
+  margin-top: -200px;
+}
+
+.qr-code {
+  width: 250px;
+  height: 250px;
+  margin: 20px 70px;
+  align-self: flex-start;
+}
+
+.video-link {
+  display: inline-block;
+  margin-top: 20px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.video-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 200px;
+  }
+  
+  .main-content {
+    margin-left: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+    height: auto;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .whatsapp-image-container {
+    flex-direction: column;
+  }
+
+  .whatsapp-instructions {
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .whatsapp-screenshot {
+    max-width: 100%;
+    margin-top: 20px;
+  }
+}
+
+.whatsapp-instructions ol {
+  text-align: left;
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.whatsapp-instructions li {
+  margin-bottom: 10px;
+}
+
+.inline-icon {
+  width: 10px;
+  height: 10px;
+  vertical-align: middle;
+  margin: 0 5px;
+}
+
+.whatsapp-instructions strong {
+  font-weight: 600;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 18px;
+  color: green;
+  margin-top: 20px;
+}
+
+.success-message img {
+  width: 24px;
+  height: 24px;
+}
+
+.completed-step {
+  color: green;
+  display: flex;
+  align-items: center;
+}
+
+.completed-icon {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+.next-step {
+  display: inline-block;
+  margin-top: 20px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.next-step:hover {
+  text-decoration: underline;
+}
+
+.message-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.message-step-content h3 {
+  font-family: 'Roboto Serif', serif;
+  font-size: 29px;
+  font-weight: 400;
+  color: #000000;
+  margin-bottom: 10px;
+  max-width: 55%;
+}
+
+.whatsapp-instructions {
+  flex: 1;
+  padding-right: 20px;
+  width: 25%;
+  margin: 0;
+  text-align: left;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.whatsapp-instructions p {
+  font-size: 16px;
+  color: #303030;
+  margin-top: 5px; 
+  margin-bottom: 10px;
+  max-width: 100%;
+  text-align: left;
+}
+
+.quick-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #e8f0fe;
+  border: none;
+  border-radius: 38px;
+  text-decoration: none;
+  color: #007c89;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.quick-action-button:hover {
+  background-color: #d2e3fc;
+}
+
+.quick-action-button img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.quick-action-button2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  margin: 20px 0 30px 0;
+  padding: 12px;
+  background-color: #007c89;
+  border: none;
+  border-radius: 20px;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  align-self: flex-start;
+}
+
+.quick-action-button2:hover {
+  background-color: #094178;
+}
+
+.quick-action-button2 img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Quick actions styles */
+.quick-actions h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #202124;
+}
+
+.quick-actions-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.quick-actions-buttons button {
+  flex: 1;
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 38px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #007c89;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-actions-buttons button:hover {
+  background-color: #f1f3f4;
+}
+
+.quick-actions-buttons button img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Performance styles */
+.performance h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #202124;
+}
+
+.performance-item-container {
+  display: flex;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.performance-item {
+  text-align: center;
+  flex: 1;
+}
+
+.performance-item img {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 10px;
+}
+
+.performance-item span {
+  display: block;
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 5px;
+}
+
+.performance-item strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  color: #202124;
+}
+
+/*
+
+/* Income styles */
+.income h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #202124;
+}
+
+.income-content {
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.income-content p {
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 15px;
+}
+
+.income-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+}
+
+.income-button {
+  padding: 13px 130px;
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 38px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #202124;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.income-button:hover {
+  background-color: #f1f3f4;
+}
+
+.income-button img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    /* Resto de las propiedades se mantienen igual */
+  }
+  
+  .main-content {
+    z-index: 1;
+    flex-grow: 1;
+    width: 100vw;
+    max-width: 100%;
+    margin-left: 250px;
+    box-sizing: border-box;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    position: static;
+    height: auto;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100vw;
+  }
+
+  .whatsapp-image-container {
+    flex-direction: column;
+  }
+
+  .whatsapp-instructions {
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+
+  .whatsapp-screenshot {
+    max-width: 100%;
+  }
+}
+
+.whatsapp-instructions ol {
+  text-align: left;
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.whatsapp-instructions li {
+  margin-bottom: 10px;
+}
+
+.inline-icon {
+  width: 10px;
+  height: 10px;
+  vertical-align: middle;
+  margin: 0 5px;
+}
+
+.whatsapp-instructions strong {
+  font-weight: 600;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 18px;
+  color: green;
+  margin-top: 20px;
+}
+
+.success-message img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Nueva clase para el paso completado */
+/* Nueva clase para el paso completado */
+.completed-step {
+  color: green;
+  display: flex;
+  align-items: center;
+}
+
+.completed-icon {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Estilo para el siguiente paso */
+.next-step {
+  display: inline-block;
+  margin-top: 20px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.next-step:hover {
+  text-decoration: underline;
+}
+
+/* Nueva clase para el paso completado */
+.completed-step {
+  color: green;
+  display: flex;
+  align-items: center;
+}
+
+.completed-icon {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Estilo para el siguiente paso */
+.next-step {
+  display: inline-block;
+  margin-top: 20px;
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.next-step:hover {
+  text-decoration: underline;
+}
+
+/* Contenido del paso de enviar mensajes */
+.message-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.message-step-content h3 {
+  font-family: 'Roboto Serif', serif;
+  font-size: 29px;
+  font-weight: 400;
+  color: #000000;
+  margin-bottom: 10px;
+  max-width: 55%;
+}
+
+.whatsapp-image-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 30px;
+  background-color: transparent; /* Fondo transparente */
+}
+
+.whatsapp-instructions {
+  flex: 1;
+  padding-right: 20px;
+  width: 25%;
+  margin: 0;
+  text-align: left; /* Cambiado a left */
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Cambiado a flex-start */
+}
+
+.whatsapp-instructions p {
+  font-size: 16px;
+  color: #303030;
+  margin-top: 5px; 
+  margin-bottom: 10px;
+  max-width: 100%;
+  text-align: left; /* Asegura que el texto esté alineado a la izquierda */
+}
+
+.whatsapp-screenshot {
+  max-width: 40%; /* Aumenta el ancho máximo de la imagen */
+  height: auto;
+  border-radius: 8px;
+  background-color: transparent;
+  margin-top: -200px; /* Ajusta el valor negativo según sea necesario para mover la imagen hacia arriba */
+}
+
+.whatsapp-screenshot2 {
+  max-width: 35%; /* Aumenta el ancho máximo de la imagen */
+  height: auto;
+  border-radius: 8px;
+  background-color: transparent;
+  margin-top: -150px; /* Ajusta el valor negativo según sea necesario para mover la imagen hacia arriba */
+}
+
+.quick-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 0.5px solid #007c89; 
+  border-radius: 38px;
+  text-decoration: none;
+  color: #007c89;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.quick-action-button:hover {
+  background-color: #d2e3fc;
+}
+
+.quick-action-button img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+.quick-action-button2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px; /* O el ancho que prefieras */
+  margin: 20px 0 30px 0; /* Cambiado para alinear a la izquierda */
+  padding: 12px;
+  background-color: #007c89;
+  border: none;
+  border-radius: 20px;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  align-self: flex-start; /* Asegura que el botón se alinee a la izquierda */
+}
+
+.quick-action-button2:hover {
+  background-color: #094178;
+}
+
+.quick-action-button2 img {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Ajuste adicional para el contenedor del mensaje */
+.message-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinea el contenido a la izquierda */
+  text-align: left;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajuste adicional para centrar el contenido del desplegable */
+.whatsapp-instructions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.completed-step {
+  color: green;
+  display: flex;
+  align-items: center;
+}
+
+.completed-icon {
+  margin-left: 10px;
+  width: 16px;
+  height: 16px;
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 18px;
+  color: green;
+  margin-top: 20px;
+}
+
+.success-message img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Dashboard.css */
+
+.steps-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 74px;
+  height: 74px;
+}
+
+.steps-progress svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.steps-progress span {
+  position: absolute;
+  font-size: 20px;
+  color: #000000;
+}
+
+/* Styles for the tooltip container */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Updated tooltip styles */
+.tooltip {
+  visibility: hidden;
+  width: 160px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none; /* Prevents the tooltip from interfering with other elements */
+}
+
+/* Tooltip arrow */
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+/* Show the tooltip */
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+/* Updated info button styles */
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #000000;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.info-icon:hover {
+  background-color: #005f6b;
+  transform: scale(1.1);
+}
+
+
+.schedule-step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-step-content h3 {
+  font-family: 'Roboto Serif', serif;
+  font-size: 29px;
+  font-weight: 400;
+  color: #000000;
+  margin-bottom: 20px;
+  max-width: 50%;
+}
+
+.whatsapp-screenshot3 {
+  max-width: 45%;
+  height: auto;
+  border-radius: 8px;
+  background-color: transparent;
+  margin-top: -100px;
+}
+
+.whatsapp-instructions3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+  max-width: 40%;
+}
+
+.coming-soon-text {
+  text-align: center;
+  font-size: 22px;
+  color: #000000;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.user-profile-image:hover {
+  transform: scale(1.1);
+}

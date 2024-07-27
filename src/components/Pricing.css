@@ -1,0 +1,80 @@
+.pricing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .billing-cycle-toggle {
+    margin-bottom: 20px;
+  }
+  
+  .billing-cycle-toggle button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .billing-cycle-toggle button.active {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .plans {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .plan {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    width: 30%;
+    text-align: center;
+  }
+  
+  .plan h3 {
+    margin-top: 0;
+  }
+  
+  .plan .price {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  
+  .plan .features {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .plan .features li {
+    margin: 10px 0;
+  }
+  
+  .subscribe-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  button-pricing {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  

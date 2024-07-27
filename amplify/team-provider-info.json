@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-talkysender11-dev-c3f9c-authRole",
+      "UnauthRoleArn": "arn:aws:iam::851725450257:role/amplify-talkysender11-dev-c3f9c-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::851725450257:role/amplify-talkysender11-dev-c3f9c-authRole",
+      "Region": "eu-west-3",
+      "DeploymentBucketName": "amplify-talkysender11-dev-c3f9c-deployment",
+      "UnauthRoleName": "amplify-talkysender11-dev-c3f9c-unauthRole",
+      "StackName": "amplify-talkysender11-dev-c3f9c",
+      "StackId": "arn:aws:cloudformation:eu-west-3:851725450257:stack/amplify-talkysender11-dev-c3f9c/97032310-434e-11ef-a0cb-0a274936f567",
+      "AmplifyAppId": "d2eghzwn1uhmhm"
+    },
+    "categories": {
+      "auth": {
+        "talkysender1143c1032c": {}
+      }
+    }
+  }
+}

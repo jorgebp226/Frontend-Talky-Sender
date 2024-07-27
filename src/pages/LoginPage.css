@@ -1,0 +1,52 @@
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .amplify-button[data-variation='primary'] {
+    background-color: #4285f4;
+  }
+  
+  .amplify-tabs {
+    display: none;
+  }
+  
+  .amplify-divider {
+    display: none;
+  }
+  
+  .amplify-button[data-social-provider='google'] {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .amplify-field__show-password {
+    display: none;
+  }
+  
+  .amplify-field-group__outer-end {
+    display: none;
+  }
+  
+  .amplify-checkbox__label {
+    font-size: 0.9em;
+  }
+  
+  .amplify-button[data-variation='link'] {
+    font-size: 0.9em;
+  }
+  
+  .amplify-field + .amplify-field {
+    margin-top: 1rem;
+  }
+  
+  .amplify-button {
+    border-radius: 4px;
+  }
+  
+  .amplify-field__control {
+    border-radius: 4px;
+  }

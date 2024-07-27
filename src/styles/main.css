@@ -1,0 +1,109 @@
+/* main.css */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fff6f6;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+  }
+  
+  .logo {
+    height: 80px;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 20px;
+    flex-grow: 1;
+    justify-content: center;
+  }
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-item a {
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-item a svg {
+    margin-left: 5px;
+  }
+  
+  .auth-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .btn-login, .btn-register {
+    padding: 8px 16px;
+    border: 1px solid #000;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+  }
+  
+  .btn-login {
+    background-color: #fff;
+  }
+  
+  .btn-register {
+    background-color: #FFDCDC;
+  }
+  
+  .main-content {
+    text-align: center;
+    margin-top: 50px;
+    max-width: 1000px;
+  }
+  
+  .main-content .title {
+    font-family: 'Roboto Serif', serif;
+    font-size: 48px;
+    font-weight: 400; /* Regular */
+  }
+  
+  .main-content .description {
+    font-family: 'Roboto Serif', serif;
+    font-size: 19px;
+    margin: 21px 0;
+    font-weight: 400; /* Regular */
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .btn-try {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600; /* Semi-bold */
+    padding: 12px 24px;
+    border: 1px solid #000;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #000;
+    font-size: 18px;
+    background-color: #FFDCDC;
+    margin-top: 40px; /* Aumentado de 60px a 100px */
+    display: inline-block; /* Asegura que el margen se aplique correctamente */
+  }

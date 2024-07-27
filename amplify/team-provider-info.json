@@ -14,6 +14,21 @@
     "categories": {
       "auth": {
         "talkysender1143c1032c": {}
+      },
+      "function": {
+        "talkysenderendpoint": {
+          "stripeSecretKey": "sk_test_51PgiHgCNobZETuuSvhlkhtEYkmIIcwWYUOllyetQ7ZxQYAx7VCg2ADzBoVjud62b1Puqr0WpbxhAc9GCxaKLfFGD00sI3O3ghJ",
+          "stripePublishKey": "pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w",
+          "stripeWebhookSecret": "whsec_d74a62723c9566cab6cbfc454db9c7323420311cc3a242884685eeb3d11f97fd",
+          "deploymentBucketName": "amplify-talkysender11-dev-c3f9c-deployment",
+          "s3Key": "amplify-builds/talkysenderendpoint-37634d5a7a4f38536b2f-build.zip"
+        }
+      },
+      "api": {
+        "api72292232": {}
+      },
+      "hosting": {
+        "S3AndCloudFront": {}
       }
     }
   }

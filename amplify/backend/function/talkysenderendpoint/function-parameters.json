@@ -1,0 +1,17 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "stripeSecretKey",
+      "environmentVariableName": "STRIPE_SECRET_KEY"
+    },
+    {
+      "cloudFormationParameterName": "stripePublishKey",
+      "environmentVariableName": "STRIPE_PUBLISH_KEY"
+    },
+    {
+      "cloudFormationParameterName": "stripeWebhookSecret",
+      "environmentVariableName": "STRIPE_WEBHOOK_SECRET"
+    }
+  ]
+}

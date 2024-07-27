@@ -1,4 +1,20 @@
 {
+  "api": {
+    "api72292232": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
   "auth": {
     "talkysender1143c1032c": {
       "customAuth": false,
@@ -28,6 +44,62 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "Cognito"
+    }
+  },
+  "function": {
+    "talkysenderendpoint": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "hosting": {
+    "S3AndCloudFront": {
+      "providerPlugin": "awscloudformation",
+      "service": "S3AndCloudFront"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_talkysenderendpoint_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ]
+    },
+    "AMPLIFY_function_talkysenderendpoint_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ]
+    },
+    "AMPLIFY_function_talkysenderendpoint_stripePublishKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ]
+    },
+    "AMPLIFY_function_talkysenderendpoint_stripeSecretKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ]
+    },
+    "AMPLIFY_function_talkysenderendpoint_stripeWebhookSecret": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "talkysenderendpoint"
+        }
+      ]
     }
   }
 }

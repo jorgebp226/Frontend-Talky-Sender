@@ -8,9 +8,9 @@
 # testing
 /coverage
 
-# production
-/build
+amplify/
 
+# production
 # misc
 .DS_Store
 .env.local
@@ -30,7 +30,7 @@ amplify/mock-data
 amplify/mock-api-resources
 amplify/backend/amplify-meta.json
 amplify/backend/.temp
-build/
+
 dist/
 node_modules/
 aws-exports.js

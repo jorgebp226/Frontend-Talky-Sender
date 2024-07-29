@@ -5,6 +5,7 @@ backend:
       commands:
         - export googleAppIdUserPool=${AMPLIFY_AUTH_GOOGLEAPPID}
         - export googleAppSecretUserPool=${AMPLIFY_AUTH_GOOGLEAPPSECRET}
+        - amplify pull --appId d2eghzwn1uhmhm --envName dev
         - amplify push --yes
 frontend:
   phases:

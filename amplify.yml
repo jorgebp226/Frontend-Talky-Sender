@@ -3,8 +3,8 @@ backend:
   phases:
     build:
       commands:
-        - export googleAppIdUserPool=${AMPLIFY_AUTH_GOOGLEAPPID}
-        - export googleAppSecretUserPool=${AMPLIFY_AUTH_GOOGLEAPPSECRET}
+        - if [ -z "$AMPLIFY_AUTH_GOOGLEAPPID" ]; then echo "AMPLIFY_AUTH_GOOGLEAPPID is not set"; else export googleAppIdUserPool=$AMPLIFY_AUTH_GOOGLEAPPID; fi
+        - if [ -z "$AMPLIFY_AUTH_GOOGLEAPPSECRET" ]; then echo "AMPLIFY_AUTH_GOOGLEAPPSECRET is not set"; else export googleAppSecretUserPool=$AMPLIFY_AUTH_GOOGLEAPPSECRET; fi
         - amplify pull --appId d2eghzwn1uhmhm --envName dev
         - amplify push --yes
 frontend:

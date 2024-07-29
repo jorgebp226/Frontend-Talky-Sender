@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/stripeapi": {
+      "name": "/stripeapi",
+      "lambdaFunction": "StripeAPIBackend",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

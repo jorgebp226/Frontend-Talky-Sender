@@ -1,11 +1,4 @@
 version: 1
-backend:
-  phases:
-    build:
-      commands:
-        - if [ -z "$AMPLIFY_AUTH_GOOGLEAPPID" ]; then echo "AMPLIFY_AUTH_GOOGLEAPPID is not set"; else export googleAppIdUserPool=$AMPLIFY_AUTH_GOOGLEAPPID; fi
-        - if [ -z "$AMPLIFY_AUTH_GOOGLEAPPSECRET" ]; then echo "AMPLIFY_AUTH_GOOGLEAPPSECRET is not set"; else export googleAppSecretUserPool=$AMPLIFY_AUTH_GOOGLEAPPSECRET; fi
-        - amplify push --yes
 frontend:
   phases:
     preBuild:

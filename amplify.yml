@@ -1,0 +1,23 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - export googleAppIdUserPool=${AMPLIFY_AUTH_GOOGLEAPPID}
+        - export googleAppSecretUserPool=${AMPLIFY_AUTH_GOOGLEAPPSECRET}
+        - amplify push --yes
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*

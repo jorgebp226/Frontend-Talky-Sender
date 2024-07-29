@@ -9,11 +9,44 @@ const CheckoutPage = () => {
     const redirectToStripeCheckout = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-        const userId = userAttributes.sub;
+        
+        // Log para verificar el contenido de localStorage
+        console.log('localStorage.getItem("userAttributes"):', localStorage.getItem('userAttributes'));
+        
+        const userAttributesStr = localStorage.getItem('userAttributes');
 
+        if (!userAttributesStr) {
+          console.error('User attributes not found in local storage');
+          navigate('/pricing');
+          return;
+        }
+
+        let userAttributes;
+        try {
+          userAttributes = JSON.parse(userAttributesStr);
+        } catch (error) {
+          console.error('Failed to parse user attributes from local storage:', error);
+          navigate('/pricing');
+          return;
+        }
+
+        if (!userAttributes) {
+          console.error('Parsed user attributes are null');
+          navigate('/pricing');
+          return;
+        }
+
+        const userId = userAttributes.sub;
+        
+        // Log para verificar userId
+        console.log('userId:', userId);
+        
         const selectedPriceId = localStorage.getItem('selectedPriceId');
         const selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
+
+        // Logs para verificar selectedPriceId y selectedBillingCycle
+        console.log('selectedPriceId:', selectedPriceId);
+        console.log('selectedBillingCycle:', selectedBillingCycle);
 
         if (!userId || !selectedPriceId || !selectedBillingCycle) {
           console.error('Missing required information for checkout');
@@ -33,7 +66,7 @@ const CheckoutPage = () => {
         console.log('Creating session with userID:', userId); // Log del userId
 
         // Crear una sesión de checkout en Stripe a través de tu backend
-        const response = await fetch('https://60y1arez3h.execute-api.eu-west-3.amazonaws.com/dev/api/webhook', {
+        const response = await fetch('https://tkzarlqsh9.execute-api.eu-west-3.amazonaws.com/dev/stripeapi/create-checkout-session', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

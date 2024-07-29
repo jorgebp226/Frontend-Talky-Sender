@@ -52,8 +52,8 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/chekout" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
-          <Route path="/success" element={<RequireAuth><SuccessPage /></RequireAuth>} />
+          <Route path="/chekout" element={<CheckoutPage />} />
+          <Route path="/success" element={<SuccessPage />} />
           <Route path="/survey/step1" element={<RequireAuth><SurveyStep1 /></RequireAuth>} />
           <Route path="/survey/step2" element={<RequireAuth><SurveyStep2 /></RequireAuth>} />
           <Route path="/survey/step3" element={<RequireAuth><SurveyStep3 /></RequireAuth>} />
@@ -80,8 +80,33 @@ function RequireAuth({ children }) {
 
   React.useEffect(() => {
     const checkPaymentStatus = async () => {
+      // Espera 4 segundos antes de continuar
+      await new Promise(resolve => setTimeout(resolve, 4000));
+
       if (user) {
-        const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
+        const userAttributesStr = localStorage.getItem('userAttributes');
+        
+        if (!userAttributesStr) {
+          console.error('User attributes not found in local storage');
+          setLoading(false);
+          return;
+        }
+
+        let userAttributes;
+        try {
+          userAttributes = JSON.parse(userAttributesStr);
+        } catch (error) {
+          console.error('Failed to parse user attributes from local storage:', error);
+          setLoading(false);
+          return;
+        }
+
+        if (!userAttributes) {
+          console.error('Parsed user attributes are null');
+          setLoading(false);
+          return;
+        }
+
         const userId = userAttributes.sub;
         if (userId) {
           localStorage.setItem('userId', userId);

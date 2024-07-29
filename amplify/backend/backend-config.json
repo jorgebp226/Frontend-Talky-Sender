@@ -13,6 +13,34 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "API Gateway"
+    },
+    "apistripedef": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "StripeAPIBackend"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
+    "chekout": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "StripeCreateURL"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
     }
   },
   "auth": {
@@ -47,6 +75,17 @@
     }
   },
   "function": {
+    "StripeAPIBackend": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "StripeCreateURL": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "talkysenderendpoint": {
       "build": true,
       "dependsOn": [],
@@ -61,6 +100,38 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_StripeAPIBackend_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "StripeAPIBackend"
+        }
+      ]
+    },
+    "AMPLIFY_function_StripeAPIBackend_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "StripeAPIBackend"
+        }
+      ]
+    },
+    "AMPLIFY_function_StripeCreateURL_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "StripeCreateURL"
+        }
+      ]
+    },
+    "AMPLIFY_function_StripeCreateURL_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "StripeCreateURL"
+        }
+      ]
+    },
     "AMPLIFY_function_talkysenderendpoint_deploymentBucketName": {
       "usedBy": [
         {

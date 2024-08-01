@@ -64,8 +64,8 @@ const Dashboard = ({ user }) => {
       });
       if (response.data && response.data.isQRScanned) {
         setIsQRScanned(true);
-        setStepsCompleted(1);
-        setStep1QR(1);
+        setStep1QR(1); // Asegúrate de que step1QR se establezca en 1 si el QR está escaneado
+        updateStepsCompleted();
       }
     } catch (error) {
       console.error('Error checking credentials status:', error);
@@ -81,18 +81,8 @@ const Dashboard = ({ user }) => {
       if (response.data) {
         setStep1QR(response.data.step1QR);
         setStep2Message(response.data.step2message);
+        updateStepsCompleted();
         
-        let initialCompletedSteps = 0;
-
-        if (response.data.step1QR === 1) {
-          initialCompletedSteps += 1;
-        }
-        if (response.data.step2message >= 1) {
-          initialCompletedSteps += 1;
-        }
-
-        setStepsCompleted(initialCompletedSteps);
-
         if (response.data.step1QR === 0) {
           setActiveStep('phone');
         } else if (response.data.step2message === 0) {
@@ -104,6 +94,13 @@ const Dashboard = ({ user }) => {
     } catch (error) {
       console.error('Error fetching completion status:', error);
     }
+  };
+
+  const updateStepsCompleted = () => {
+    let completedSteps = 0;
+    if (step1QR !== 0) completedSteps += 1;
+    if (step2Message !== 0) completedSteps += 1;
+    setStepsCompleted(completedSteps);
   };
 
   useEffect(() => {

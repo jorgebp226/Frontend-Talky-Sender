@@ -8,6 +8,7 @@ const Dashboard = ({ user }) => {
   const [activeStep, setActiveStep] = useState(null);
   const [qrUrl, setQrUrl] = useState('');
   const [qrStatusUrl, setQrStatusUrl] = useState('');
+  const [qrImage, setQrImage] = useState('');
   const [isQRScanned, setIsQRScanned] = useState(false);
   const [stepsCompleted, setStepsCompleted] = useState(0);
   const [step1QR, setStep1QR] = useState(0);
@@ -34,9 +35,23 @@ const Dashboard = ({ user }) => {
       if (response.data) {
         setQrUrl(response.data.qrUrl);
         setQrStatusUrl(response.data.qrStatusUrl);
+        fetchQrImage(response.data.qrUrl);
       }
     } catch (error) {
       console.error('Error fetching QR URL:', error);
+    }
+  };
+
+  const fetchQrImage = async (url) => {
+    try {
+      const response = await axios.post('https://8ur045ja3e.execute-api.eu-west-3.amazonaws.com/dashboard/qr', {
+        qr_url: url
+      });
+      if (response.data && response.data.qr_image) {
+        setQrImage(`data:image/png;base64,${response.data.qr_image}`);
+      }
+    } catch (error) {
+      console.error('Error fetching QR image:', error);
     }
   };
 
@@ -44,7 +59,9 @@ const Dashboard = ({ user }) => {
     try {
       if (!qrStatusUrl) return;
 
-      const response = await axios.get(qrStatusUrl);
+      const response = await axios.post('https://8ur045ja3e.execute-api.eu-west-3.amazonaws.com/dashboard/status', {
+        status_url: qrStatusUrl
+      });
       if (response.data && response.data.isQRScanned) {
         setIsQRScanned(true);
         setStepsCompleted(1);
@@ -132,7 +149,6 @@ const Dashboard = ({ user }) => {
       window.scrollTo(0, 0);
     }
   };
-
 
   return (
     <div className="dashboard-container">
@@ -236,9 +252,9 @@ const Dashboard = ({ user }) => {
                             <li>Toca <strong>Dispositivos vinculados</strong> y, luego, <strong>Vincular un dispositivo</strong>.</li>
                             <li>Apunta tu teléfono hacia esta pantalla para escanear el código QR.</li>
                           </ol>
-                          {activeStep === 'phone' && qrUrl && !isQRScanned ? (
+                          {activeStep === 'phone' && qrImage && !isQRScanned ? (
                             <img 
-                              src={`${qrUrl}?update=${qrUpdateCounter}`} 
+                              src={qrImage}
                               alt="QR Code" 
                               className="qr-code" 
                               key={qrUpdateCounter}

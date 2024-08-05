@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import contactsIcon from '../assets/images/contacts-icon.png';
-import * as XLSX from 'xlsx';  // Asegúrate de tener este paquete instalado
 
 const UploaderWrapper = styled.div`
   margin-bottom: 20px;
@@ -69,16 +68,7 @@ const ContactsUploader = ({ setCsvFile }) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-        setCsvFile(worksheet);
-      };
-      reader.readAsArrayBuffer(file);
+      setCsvFile(file);
     }
   };
 

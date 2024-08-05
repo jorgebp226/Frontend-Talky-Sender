@@ -33,22 +33,22 @@ const ActionButton = styled.button`
   background-color: ${props => {
     if (props.isSending && !props.isPaused) return '#ef4444';
     if (props.isPaused) return '#3b82f6';
-    if (props.isProcessing) return '#cfe2ff'; // Azul claro cuando se está procesando
+    if (props.isProcessing) return '#cfe2ff';
     return '#3b82f6';
   }};
-  color: ${props => (props.isProcessing ? '#000' : 'white')}; // Texto negro cuando se está procesando
+  color: ${props => (props.isProcessing ? '#000' : 'white')};
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
   cursor: pointer;
   transition: background-color 0.3s;
-  pointer-events: ${props => (props.isProcessing ? 'none' : 'auto')}; // Desactivar el botón cuando se está procesando
+  pointer-events: ${props => (props.isProcessing ? 'none' : 'auto')};
 
   &:hover {
     background-color: ${props => {
       if (props.isSending && !props.isPaused) return '#f87171';
       if (props.isPaused) return '#60a5fa';
-      if (props.isProcessing) return '#cfe2ff'; // No cambiar color al pasar el cursor cuando se está procesando
+      if (props.isProcessing) return '#cfe2ff';
       return '#60a5fa';
     }};
   }
@@ -138,8 +138,8 @@ const CloseButton = styled.button`
 
 function SendMessages() {
   const [message, setMessage] = useState('');
-  const [image, setImage] = useState(null);
-  const [csvData, setCsvData] = useState(null);
+  const [csvFile, setCsvFile] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -175,7 +175,7 @@ function SendMessages() {
             pathname: '/resumen',
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: csvData.split('\n').length
+              numMensajes: csvFile ? csvFile.split('\n').length : 0
             }
           });
         }
@@ -185,7 +185,7 @@ function SendMessages() {
 
   const handleAction = async () => {
     if (!isSending) {
-      if (!message || !csvData) {
+      if (!message || !csvFile) {
         return;
       }
       setErrorMessage('');
@@ -200,8 +200,8 @@ function SendMessages() {
 
         const payload = {
           mensaje: message,
-          imagen: image,
-          csv_data: csvData,
+          imagen: imageFile ? await convertImageToBase64(imageFile) : null,
+          csv_data: await readFileAsText(csvFile),
           user_id: userId
         };
         
@@ -215,16 +215,15 @@ function SendMessages() {
           console.log(response.data);
           console.log('userId before API call:', userId);
           await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`, 
-            {},  // Empty body
+            {},
             {
               headers: {
                 'Content-Type': 'application/json'
               }
             }
           );
-          // Empezar el progreso después de la respuesta del servidor
           setIsSending(true);
-          const totalTime = calculateTotalTime(csvData);
+          const totalTime = calculateTotalTime(await readFileAsText(csvFile));
           setTimeLeft(totalTime / 60);
           startProgress(totalTime);
         } else if (response.status === 400) {
@@ -269,8 +268,8 @@ function SendMessages() {
       } else {
         const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/reanudar', {
           mensaje: message,
-          imagen: image,
-          csv_data: csvData,
+          imagen: imageFile ? await convertImageToBase64(imageFile) : null,
+          csv_data: await readFileAsText(csvFile),
           user_id: userId
         }, {
           timeout: 60000
@@ -278,8 +277,8 @@ function SendMessages() {
 
         if (response.status === 200) {
           setIsPaused(false);
-          const totalTime = calculateTotalTime(csvData);
-          startProgress(totalTime, progress); // Reanudar desde el progreso actual
+          const totalTime = calculateTotalTime(await readFileAsText(csvFile));
+          startProgress(totalTime, progress);
         }
       }
     } catch (error) {
@@ -299,8 +298,8 @@ function SendMessages() {
     if (isPaused) {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
-      const totalTime = calculateTotalTime(csvData);
-      startProgress(totalTime, progress); // Continuar desde el progreso actual
+      const totalTime = calculateTotalTime(csvFile);
+      startProgress(totalTime, progress);
     }
 
     return () => clearInterval(intervalRef.current);
@@ -310,7 +309,25 @@ function SendMessages() {
     setErrorMessage('');
   };
 
-  const isButtonDisabled = (!isSending && (message.length === 0 || !csvData)) || isResuming || isProcessing;
+  const convertImageToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
+
+  const isButtonDisabled = (!isSending && (message.length === 0 || !csvFile)) || isResuming || isProcessing;
 
   return (
     <>
@@ -327,8 +344,8 @@ function SendMessages() {
           </ErrorMessage>
         )}
         <MessageForm setMessage={setMessage} />
-        <ImageUploader setImage={setImage} />
-        <ContactsUploader setCsvData={setCsvData} />
+        <ImageUploader setImageFile={setImageFile} />
+        <ContactsUploader setCsvFile={setCsvFile} />
         <ButtonContainerWrapper>
           {isSending && (
             <ProgressBar

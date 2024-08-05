@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import uploadIcon from '../assets/images/upload-icon.png';  // Asegúrate de ajustar la ruta según la ubicación real de tu archivo
+import uploadIcon from '../assets/images/upload-icon.png';
 
 const UploaderWrapper = styled.div`
   margin-bottom: 20px;
@@ -61,16 +61,15 @@ const CloseButton = styled.button`
   font-size: 18px;
 `;
 
-const ImageUploader = ({ setImage }) => {
+const ImageUploader = ({ setImageFile }) => {
   const [preview, setPreview] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const imageData = reader.result.split(',')[1];
-        setImage(imageData);
         setPreview(reader.result);
       };
       reader.readAsDataURL(file);
@@ -78,7 +77,7 @@ const ImageUploader = ({ setImage }) => {
   };
 
   const handleRemoveImage = () => {
-    setImage(null);
+    setImageFile(null);
     setPreview(null);
   };
 
@@ -106,4 +105,3 @@ const ImageUploader = ({ setImage }) => {
 };
 
 export default ImageUploader;
-

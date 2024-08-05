@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import contactsIcon from '../assets/images/contacts-icon.png';  // Asegúrate de ajustar la ruta según la ubicación real de tu archivo
+import contactsIcon from '../assets/images/contacts-icon.png';
 
 const UploaderWrapper = styled.div`
   margin-bottom: 20px;
@@ -61,23 +61,19 @@ const DownloadLink = styled.a`
   cursor: pointer;
 `;
 
-const ContactsUploader = ({ setCsvData }) => {
+const ContactsUploader = ({ setCsvFile }) => {
   const [fileName, setFileName] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCsvData(reader.result);
-      };
-      reader.readAsText(file);
+      setCsvFile(file);
     }
   };
 
   const handleRemoveFile = () => {
-    setCsvData(null);
+    setCsvFile(null);
     setFileName('');
   };
 

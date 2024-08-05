@@ -171,11 +171,11 @@ function SendMessages() {
         if (timeElapsed >= totalTime) {
           clearInterval(intervalRef.current);
           setIsSending(false);
-          navigate({
-            pathname: '/resumen',
+          const numMensajes = csvFile ? csvFile.size : 0; // Usamos el tamaño del archivo como aproximación
+          navigate('/resumen', {
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: csvFile ? csvFile.split('\n').length : 0
+              numMensajes: numMensajes
             }
           });
         }

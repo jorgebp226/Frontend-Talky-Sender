@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import contactsIcon from '../assets/images/contacts-icon.png';
+import * as XLSX from 'xlsx'; // Importar XLSX para manejar archivos Excel
 
 const UploaderWrapper = styled.div`
   margin-bottom: 20px;
@@ -61,19 +62,40 @@ const DownloadLink = styled.a`
   cursor: pointer;
 `;
 
-const ContactsUploader = ({ setCsvFile }) => {
+const ContactsUploader = ({ setCsvData }) => {
   const [fileName, setFileName] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
-      setCsvFile(file);
+      if (file.name.endsWith('.xlsx')) {
+        readExcelFile(file);
+      } else if (file.name.endsWith('.csv')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setCsvData(reader.result);
+        };
+        reader.readAsText(file);
+      }
     }
   };
 
+  const readExcelFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const csv = XLSX.utils.sheet_to_csv(worksheet);
+      setCsvData(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
   const handleRemoveFile = () => {
-    setCsvFile(null);
+    setCsvData(null);
     setFileName('');
   };
 

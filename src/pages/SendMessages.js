@@ -8,6 +8,7 @@ import ImageUploader from '../components/ImageUploader';
 import ContactsUploader from '../components/ContactsUploader';
 import ProgressBar from '../components/ProgressBar';
 import ConfirmationModal from '../components/ConfirmationModal';
+import * as XLSX from 'xlsx';
 
 const AppWrapper = styled.div`
   max-width: 800px;
@@ -152,9 +153,43 @@ function SendMessages() {
   const intervalRef = useRef(null);
   const navigate = useNavigate();
 
-  const calculateTotalTime = (csvData) => {
-    const numRows = csvData.split('\n').length;
-    return 9 * numRows;
+  
+
+  const calculateTotalTime = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        let numRows;
+        
+        if (file.name.endsWith('.csv')) {
+          // For CSV files
+          const csvData = e.target.result;
+          numRows = csvData.split('\n').length;
+        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+          // For Excel files
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, {type: 'array'});
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          numRows = jsonData.length;
+        } else {
+          reject(new Error('Unsupported file format'));
+          return;
+        }
+        
+        resolve(9 * numRows);
+      };
+      
+      reader.onerror = (error) => reject(error);
+      
+      if (file.name.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    });
   };
 
   const startProgress = (totalTime, initialProgress = 0) => {
@@ -198,17 +233,21 @@ function SendMessages() {
         }
         const userId = userAttributes.sub;
 
-        const payload = {
-          mensaje: message,
-          imagen: imageFile ? await convertImageToBase64(imageFile) : null,
-          csv_data: await readFileAsText(csvFile),
-          user_id: userId
-        };
+        const formData = new FormData();
+        formData.append('mensaje', message);
+        formData.append('file', csvFile);
+        if (imageFile) {
+          formData.append('imagen', imageFile);
+        }
+        formData.append('user_id', userId);
         
-        console.log('Datos enviados a la API:', payload);
+        console.log('Datos enviados a la API:', formData);
     
-        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', payload, {
-          timeout: 60000
+        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', formData, {
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
         });
     
         if (response.status === 200) {
@@ -223,7 +262,7 @@ function SendMessages() {
             }
           );
           setIsSending(true);
-          const totalTime = calculateTotalTime(await readFileAsText(csvFile));
+          const totalTime = calculateTotalTime(csvFile);
           setTimeLeft(totalTime / 60);
           startProgress(totalTime);
         } else if (response.status === 400) {

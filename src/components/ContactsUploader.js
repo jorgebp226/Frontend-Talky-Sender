@@ -88,7 +88,12 @@ const ContactsUploader = ({ setCsvData }) => {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      const csv = XLSX.utils.sheet_to_csv(worksheet);
+      let csv = XLSX.utils.sheet_to_csv(worksheet);
+      
+      // Limpiar el CSV de posibles caracteres no deseados
+      csv = csv.replace(/[\r\n]+/g, '\n'); // Reemplazar múltiples saltos de línea por uno solo
+      csv = csv.replace(/"/g, ''); // Eliminar comillas dobles
+      
       setCsvData(csv);
     };
     reader.readAsArrayBuffer(file);

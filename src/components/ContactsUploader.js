@@ -96,12 +96,15 @@ const ContactsUploader = ({ setCsvData }) => {
 
   const processCsvData = (csvData) => {
     // Dividir el CSV en líneas
-    let lines = csvData.split('\n');
+    let lines = csvData.split(/\r\n|\n/);
+    
+    // Determinar el separador (coma o punto y coma)
+    const separator = lines[0].includes(';') ? ';' : ',';
     
     // Encontrar los índices de las columnas 'Nombre' y 'Teléfono'
-    let headers = lines[0].split(',');
+    let headers = lines[0].split(separator);
     let nombreIndex = headers.findIndex(h => h.trim().toLowerCase() === 'nombre');
-    let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono');
+    let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono' || h.trim().toLowerCase() === 'telefono');
     
     // Si no se encuentran las columnas, buscar alternativas
     if (nombreIndex === -1) nombreIndex = headers.findIndex(h => h.trim().toLowerCase().includes('nombre'));
@@ -114,15 +117,18 @@ const ContactsUploader = ({ setCsvData }) => {
     // Crear un nuevo CSV con solo las columnas 'Nombre' y 'Teléfono'
     let newCsv = 'Nombre;Teléfono\n';
     for (let i = 1; i < lines.length; i++) {
-      let columns = lines[i].split(',');
+      let columns = lines[i].split(separator);
       if (columns.length > 1) {
-        newCsv += `${columns[nombreIndex]};${columns[telefonoIndex]}\n`;
+        let nombre = columns[nombreIndex].trim().replace(/"/g, '');
+        let telefono = columns[telefonoIndex].trim().replace(/"/g, '');
+        if (nombre && telefono) {
+          newCsv += `${nombre};${telefono}\n`;
+        }
       }
     }
     
     // Limpiar el CSV de posibles caracteres no deseados
     newCsv = newCsv.replace(/[\r\n]+/g, '\n').trim();
-    newCsv = newCsv.replace(/"/g, '');
     
     setCsvData(newCsv);
   };

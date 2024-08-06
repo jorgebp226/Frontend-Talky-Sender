@@ -155,7 +155,7 @@ function SendMessages() {
 
   
 
-  const calculateTotalTime = (file) => {
+  const calculateTotalTime = async (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -166,7 +166,7 @@ function SendMessages() {
           // For CSV files
           const csvData = e.target.result;
           numRows = csvData.split('\n').length;
-        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        } else if (file.name.endsWith('.xlsx') || file.name.endswith('.xls')) {
           // For Excel files
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, {type: 'array'});

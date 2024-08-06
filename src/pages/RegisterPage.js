@@ -97,6 +97,11 @@ const RegisterPage = () => {
         {() => (
           <View>
             <Text>{I18n.get('Procesando registro...')}</Text>
+            <View textAlign="center" padding="20px">
+              <Text>
+                Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
+              </Text>
+            </View>
           </View>
         )}
       </Authenticator>

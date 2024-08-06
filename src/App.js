@@ -23,6 +23,8 @@ import { I18n } from '@aws-amplify/core';
 import PricingPage from './pages/PricingPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import axios from 'axios';
 
 Amplify.configure(awsExports);
@@ -54,6 +56,8 @@ function AppContent() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/chekout" element={<CheckoutPage />} />
           <Route path="/success" element={<SuccessPage />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/survey/step1" element={<RequireAuth><SurveyStep1 /></RequireAuth>} />
           <Route path="/survey/step2" element={<RequireAuth><SurveyStep2 /></RequireAuth>} />
           <Route path="/survey/step3" element={<RequireAuth><SurveyStep3 /></RequireAuth>} />
@@ -138,6 +142,5 @@ function RequireAuth({ children }) {
 
   return children;
 }
-
 
 export default App;

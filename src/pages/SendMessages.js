@@ -8,7 +8,6 @@ import ImageUploader from '../components/ImageUploader';
 import ContactsUploader from '../components/ContactsUploader';
 import ProgressBar from '../components/ProgressBar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import * as XLSX from 'xlsx';
 
 const AppWrapper = styled.div`
   max-width: 800px;
@@ -34,22 +33,22 @@ const ActionButton = styled.button`
   background-color: ${props => {
     if (props.isSending && !props.isPaused) return '#ef4444';
     if (props.isPaused) return '#3b82f6';
-    if (props.isProcessing) return '#cfe2ff';
+    if (props.isProcessing) return '#cfe2ff'; // Azul claro cuando se está procesando
     return '#3b82f6';
   }};
-  color: ${props => (props.isProcessing ? '#000' : 'white')};
+  color: ${props => (props.isProcessing ? '#000' : 'white')}; // Texto negro cuando se está procesando
   border: none;
   border-radius: 5px;
   padding: 10px 20px;
   cursor: pointer;
   transition: background-color 0.3s;
-  pointer-events: ${props => (props.isProcessing ? 'none' : 'auto')};
+  pointer-events: ${props => (props.isProcessing ? 'none' : 'auto')}; // Desactivar el botón cuando se está procesando
 
   &:hover {
     background-color: ${props => {
       if (props.isSending && !props.isPaused) return '#f87171';
       if (props.isPaused) return '#60a5fa';
-      if (props.isProcessing) return '#cfe2ff';
+      if (props.isProcessing) return '#cfe2ff'; // No cambiar color al pasar el cursor cuando se está procesando
       return '#60a5fa';
     }};
   }
@@ -139,8 +138,8 @@ const CloseButton = styled.button`
 
 function SendMessages() {
   const [message, setMessage] = useState('');
-  const [csvFile, setCsvFile] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  const [image, setImage] = useState(null);
+  const [csvData, setCsvData] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -153,39 +152,9 @@ function SendMessages() {
   const intervalRef = useRef(null);
   const navigate = useNavigate();
 
-  const calculateTotalTime = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        let numRows;
-
-        if (file.name.endsWith('.csv')) {
-          const csvData = e.target.result;
-          numRows = csvData.split('\n').length;
-        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: '' });
-          numRows = jsonData.length;
-        } else {
-          reject(new Error('Unsupported file format'));
-          return;
-        }
-
-        resolve(9 * numRows);
-      };
-
-      reader.onerror = (error) => reject(error);
-
-      if (file.name.endsWith('.csv')) {
-        reader.readAsText(file, 'UTF-8');
-      } else {
-        reader.readAsArrayBuffer(file);
-      }
-    });
+  const calculateTotalTime = (csvData) => {
+    const numRows = csvData.split('\n').length;
+    return 9 * numRows;
   };
 
   const startProgress = (totalTime, initialProgress = 0) => {
@@ -202,11 +171,11 @@ function SendMessages() {
         if (timeElapsed >= totalTime) {
           clearInterval(intervalRef.current);
           setIsSending(false);
-          const numMensajes = csvFile ? csvFile.size : 0; 
-          navigate('/resumen', {
+          navigate({
+            pathname: '/resumen',
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: numMensajes
+              numMensajes: csvData.split('\n').length
             }
           });
         }
@@ -216,12 +185,12 @@ function SendMessages() {
 
   const handleAction = async () => {
     if (!isSending) {
-      if (!message || !csvFile) {
+      if (!message || !csvData) {
         return;
       }
       setErrorMessage('');
       setIsProcessing(true);
-
+    
       try {
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         if (!userAttributes || !userAttributes.sub) {
@@ -229,36 +198,33 @@ function SendMessages() {
         }
         const userId = userAttributes.sub;
 
-        const formData = new FormData();
-        formData.append('mensaje', message);
-        formData.append('file', csvFile);
-        if (imageFile) {
-          formData.append('imagen', imageFile);
-        }
-        formData.append('user_id', userId);
-
-        console.log('Datos enviados a la API:', formData);
-
-        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', formData, {
-          timeout: 60000,
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+        const payload = {
+          mensaje: message,
+          imagen: image,
+          csv_data: csvData,
+          user_id: userId
+        };
+        
+        console.log('Datos enviados a la API:', payload);
+    
+        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', payload, {
+          timeout: 60000
         });
-
+    
         if (response.status === 200) {
           console.log(response.data);
           console.log('userId before API call:', userId);
-          await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`,
-            {},
+          await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`, 
+            {},  // Empty body
             {
               headers: {
                 'Content-Type': 'application/json'
               }
             }
           );
+          // Empezar el progreso después de la respuesta del servidor
           setIsSending(true);
-          const totalTime = await calculateTotalTime(csvFile);
+          const totalTime = calculateTotalTime(csvData);
           setTimeLeft(totalTime / 60);
           startProgress(totalTime);
         } else if (response.status === 400) {
@@ -303,8 +269,8 @@ function SendMessages() {
       } else {
         const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/reanudar', {
           mensaje: message,
-          imagen: imageFile ? await convertImageToBase64(imageFile) : null,
-          csv_data: await readFileAsText(csvFile),
+          imagen: image,
+          csv_data: csvData,
           user_id: userId
         }, {
           timeout: 60000
@@ -312,8 +278,8 @@ function SendMessages() {
 
         if (response.status === 200) {
           setIsPaused(false);
-          const totalTime = await calculateTotalTime(await readFileAsText(csvFile));
-          startProgress(totalTime, progress);
+          const totalTime = calculateTotalTime(csvData);
+          startProgress(totalTime, progress); // Reanudar desde el progreso actual
         }
       }
     } catch (error) {
@@ -333,8 +299,8 @@ function SendMessages() {
     if (isPaused) {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
-      const totalTime = calculateTotalTime(csvFile);
-      startProgress(totalTime, progress);
+      const totalTime = calculateTotalTime(csvData);
+      startProgress(totalTime, progress); // Continuar desde el progreso actual
     }
 
     return () => clearInterval(intervalRef.current);
@@ -344,25 +310,7 @@ function SendMessages() {
     setErrorMessage('');
   };
 
-  const convertImageToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const readFileAsText = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsText(file, 'UTF-8');
-    });
-  };
-
-  const isButtonDisabled = (!isSending && (message.length === 0 || !csvFile)) || isResuming || isProcessing;
+  const isButtonDisabled = (!isSending && (message.length === 0 || !csvData)) || isResuming || isProcessing;
 
   return (
     <>
@@ -379,8 +327,8 @@ function SendMessages() {
           </ErrorMessage>
         )}
         <MessageForm setMessage={setMessage} />
-        <ImageUploader setImageFile={setImageFile} />
-        <ContactsUploader setCsvFile={setCsvFile} />
+        <ImageUploader setImage={setImage} />
+        <ContactsUploader setCsvData={setCsvData} />
         <ButtonContainerWrapper>
           {isSending && (
             <ProgressBar

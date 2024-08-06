@@ -82,12 +82,12 @@ const ContactsUploader = ({ setCsvFile }) => {
       <h2>Contactos</h2>
       <FileInput 
         type="file" 
-        accept=".csv,.xlsx,.xls"
+        accept=".csv,.xlsx"
         onChange={handleFileChange}
         id="contactsUpload"
       />
       <FileLabel htmlFor="contactsUpload">
-        <img src={contactsIcon} alt="Contacts icon" /> Elegir archivo CSV o Excel
+        <img src={contactsIcon} alt="Contacts icon" /> Elegir archivo CSV o XLSX
       </FileLabel>
       <p>
         <DownloadLink href="https://flyerswhatsappsaas.s3.eu-west-3.amazonaws.com/pantillacsv/Template-Envios.csv" download>

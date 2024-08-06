@@ -1,10 +1,10 @@
 import React from 'react';
-import { Authenticator, useTheme, View, Image, Text, Heading, useAuthenticator } from '@aws-amplify/ui-react';
+import { Authenticator, useTheme, View, Image, Text, Heading, useAuthenticator, CheckboxField } from '@aws-amplify/ui-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css';
 import { I18n } from '@aws-amplify/core';
 import { theme } from './loginPageConfig';
-import { useUserAttributes } from '../hooks/useUserAttributes'; 
+import { useUserAttributes } from '../hooks/useUserAttributes';
 
 const components = {
   Header() {
@@ -43,6 +43,24 @@ const components = {
         >
           {I18n.get('Crea tu cuenta en Talky')}
         </Heading>
+      );
+    },
+    Footer() {
+      return (
+        <View textAlign="left" padding="20px">
+          <CheckboxField
+            label={
+              <Text>
+                No quiero recibir correos electrónicos sobre Talky, actualizaciones de productos y funciones relacionadas, ni tampoco prácticas recomendadas de marketing ni promociones de Talky. Al no marcar la casilla, acepto que se me suscriba de forma predeterminada.
+              </Text>
+            }
+            name="marketing-consent"
+            value="yes"
+          />
+          <Text padding="20px 0">
+            Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
+          </Text>
+        </View>
       );
     },
   },
@@ -97,11 +115,6 @@ const RegisterPage = () => {
         {() => (
           <View>
             <Text>{I18n.get('Procesando registro...')}</Text>
-            <View textAlign="center" padding="20px">
-              <Text>
-                Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
-              </Text>
-            </View>
           </View>
         )}
       </Authenticator>

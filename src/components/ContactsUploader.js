@@ -88,7 +88,7 @@ const ContactsUploader = ({ setCsvData }) => {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
-      let csv = XLSX.utils.sheet_to_csv(worksheet);
+      let csv = XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
       processCsvData(csv);
     };
     reader.readAsArrayBuffer(file);
@@ -101,8 +101,13 @@ const ContactsUploader = ({ setCsvData }) => {
     // Determinar el separador (coma o punto y coma)
     const separator = lines[0].includes(';') ? ';' : ',';
     
+    // Convertir el separador a punto y coma si es necesario
+    if (separator === ',') {
+      lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
+    }
+    
     // Encontrar los índices de las columnas 'Nombre' y 'Teléfono'
-    let headers = lines[0].split(separator);
+    let headers = lines[0].split(';');
     let nombreIndex = headers.findIndex(h => h.trim().toLowerCase() === 'nombre');
     let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono' || h.trim().toLowerCase() === 'telefono');
     
@@ -114,18 +119,20 @@ const ContactsUploader = ({ setCsvData }) => {
     if (nombreIndex === -1) nombreIndex = 0;
     if (telefonoIndex === -1) telefonoIndex = 1;
     
-    // Crear un nuevo CSV con solo las columnas 'Nombre' y 'Teléfono'
-    let newCsv = 'Nombre;Teléfono\n';
-    for (let i = 1; i < lines.length; i++) {
-      let columns = lines[i].split(separator);
-      if (columns.length > 1) {
-        let nombre = columns[nombreIndex].trim().replace(/"/g, '');
-        let telefono = columns[telefonoIndex].trim().replace(/"/g, '');
-        if (nombre && telefono) {
-          newCsv += `${nombre};${telefono}\n`;
+    // Asegurarse de que 'Nombre' y 'Teléfono' estén en las primeras dos columnas
+    if (nombreIndex !== 0 || telefonoIndex !== 1) {
+      lines = lines.map((line, index) => {
+        if (index === 0) {
+          return `Nombre;Teléfono;${headers.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
+        } else {
+          const columns = line.split(';');
+          return `${columns[nombreIndex]};${columns[telefonoIndex]};${columns.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
         }
-      }
+      });
     }
+    
+    // Unir las líneas de nuevo en un string CSV
+    let newCsv = lines.join('\n');
     
     // Limpiar el CSV de posibles caracteres no deseados
     newCsv = newCsv.replace(/[\r\n]+/g, '\n').trim();
@@ -137,6 +144,7 @@ const ContactsUploader = ({ setCsvData }) => {
     setCsvData(null);
     setFileName('');
   };
+
 
   return (
     <UploaderWrapper>

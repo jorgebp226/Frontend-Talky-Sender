@@ -153,39 +153,35 @@ function SendMessages() {
   const intervalRef = useRef(null);
   const navigate = useNavigate();
 
-  
-
-  const calculateTotalTime = async (file) => {
+  const calculateTotalTime = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         let numRows;
-        
+
         if (file.name.endsWith('.csv')) {
-          // For CSV files
           const csvData = e.target.result;
           numRows = csvData.split('\n').length;
-        } else if (file.name.endsWith('.xlsx') || file.name.endswith('.xls')) {
-          // For Excel files
+        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
           const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
+          const workbook = XLSX.read(data, { type: 'array' });
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: '' });
           numRows = jsonData.length;
         } else {
           reject(new Error('Unsupported file format'));
           return;
         }
-        
+
         resolve(9 * numRows);
       };
-      
+
       reader.onerror = (error) => reject(error);
-      
+
       if (file.name.endsWith('.csv')) {
-        reader.readAsText(file);
+        reader.readAsText(file, 'UTF-8');
       } else {
         reader.readAsArrayBuffer(file);
       }
@@ -206,7 +202,7 @@ function SendMessages() {
         if (timeElapsed >= totalTime) {
           clearInterval(intervalRef.current);
           setIsSending(false);
-          const numMensajes = csvFile ? csvFile.size : 0; // Usamos el tamaño del archivo como aproximación
+          const numMensajes = csvFile ? csvFile.size : 0; 
           navigate('/resumen', {
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
@@ -225,7 +221,7 @@ function SendMessages() {
       }
       setErrorMessage('');
       setIsProcessing(true);
-    
+
       try {
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         if (!userAttributes || !userAttributes.sub) {
@@ -240,20 +236,20 @@ function SendMessages() {
           formData.append('imagen', imageFile);
         }
         formData.append('user_id', userId);
-        
+
         console.log('Datos enviados a la API:', formData);
-    
+
         const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', formData, {
           timeout: 60000,
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
-    
+
         if (response.status === 200) {
           console.log(response.data);
           console.log('userId before API call:', userId);
-          await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`, 
+          await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`,
             {},
             {
               headers: {
@@ -262,7 +258,7 @@ function SendMessages() {
             }
           );
           setIsSending(true);
-          const totalTime = calculateTotalTime(csvFile);
+          const totalTime = await calculateTotalTime(csvFile);
           setTimeLeft(totalTime / 60);
           startProgress(totalTime);
         } else if (response.status === 400) {
@@ -316,7 +312,7 @@ function SendMessages() {
 
         if (response.status === 200) {
           setIsPaused(false);
-          const totalTime = calculateTotalTime(await readFileAsText(csvFile));
+          const totalTime = await calculateTotalTime(await readFileAsText(csvFile));
           startProgress(totalTime, progress);
         }
       }
@@ -362,7 +358,7 @@ function SendMessages() {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.onerror = reject;
-      reader.readAsText(file);
+      reader.readAsText(file, 'UTF-8');
     });
   };
 

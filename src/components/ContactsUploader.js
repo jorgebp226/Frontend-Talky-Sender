@@ -89,9 +89,9 @@ const ContactsUploader = ({ setCsvData }) => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       let csv = XLSX.utils.sheet_to_csv(worksheet);
-      
+
       // Limpiar el CSV de posibles caracteres no deseados
-      csv = csv.replace(/[\r\n]+/g, '\n'); // Reemplazar múltiples saltos de línea por uno solo
+      csv = csv.replace(/[\r\n]+/g, '\n').trim(); // Reemplazar múltiples saltos de línea por uno solo y eliminar espacios en blanco
       csv = csv.replace(/"/g, ''); // Eliminar comillas dobles
       
       setCsvData(csv);

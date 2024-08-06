@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import contactsIcon from '../assets/images/contacts-icon.png';
-import * as XLSX from 'xlsx'; // Importar XLSX para manejar archivos Excel
+import * as XLSX from 'xlsx';
 
 const UploaderWrapper = styled.div`
   margin-bottom: 20px;
@@ -74,7 +74,7 @@ const ContactsUploader = ({ setCsvData }) => {
       } else if (file.name.endsWith('.csv')) {
         const reader = new FileReader();
         reader.onload = () => {
-          setCsvData(reader.result);
+          processCsvData(reader.result);
         };
         reader.readAsText(file);
       }
@@ -89,14 +89,42 @@ const ContactsUploader = ({ setCsvData }) => {
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       let csv = XLSX.utils.sheet_to_csv(worksheet);
-
-      // Limpiar el CSV de posibles caracteres no deseados
-      csv = csv.replace(/[\r\n]+/g, '\n').trim(); // Reemplazar múltiples saltos de línea por uno solo y eliminar espacios en blanco
-      csv = csv.replace(/"/g, ''); // Eliminar comillas dobles
-      
-      setCsvData(csv);
+      processCsvData(csv);
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const processCsvData = (csvData) => {
+    // Dividir el CSV en líneas
+    let lines = csvData.split('\n');
+    
+    // Encontrar los índices de las columnas 'Nombre' y 'Teléfono'
+    let headers = lines[0].split(',');
+    let nombreIndex = headers.findIndex(h => h.trim().toLowerCase() === 'nombre');
+    let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono');
+    
+    // Si no se encuentran las columnas, buscar alternativas
+    if (nombreIndex === -1) nombreIndex = headers.findIndex(h => h.trim().toLowerCase().includes('nombre'));
+    if (telefonoIndex === -1) telefonoIndex = headers.findIndex(h => h.trim().toLowerCase().includes('telefono') || h.trim().toLowerCase().includes('teléfono'));
+    
+    // Si aún no se encuentran, usar las dos primeras columnas
+    if (nombreIndex === -1) nombreIndex = 0;
+    if (telefonoIndex === -1) telefonoIndex = 1;
+    
+    // Crear un nuevo CSV con solo las columnas 'Nombre' y 'Teléfono'
+    let newCsv = 'Nombre;Teléfono\n';
+    for (let i = 1; i < lines.length; i++) {
+      let columns = lines[i].split(',');
+      if (columns.length > 1) {
+        newCsv += `${columns[nombreIndex]};${columns[telefonoIndex]}\n`;
+      }
+    }
+    
+    // Limpiar el CSV de posibles caracteres no deseados
+    newCsv = newCsv.replace(/[\r\n]+/g, '\n').trim();
+    newCsv = newCsv.replace(/"/g, '');
+    
+    setCsvData(newCsv);
   };
 
   const handleRemoveFile = () => {

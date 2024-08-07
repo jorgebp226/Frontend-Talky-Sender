@@ -45,7 +45,7 @@ const components = {
         </Heading>
       );
     },
-    Footer({ setMarketingConsent }) {
+    Footer() {
       return (
         <View textAlign="left" padding="20px">
           <CheckboxField
@@ -58,7 +58,7 @@ const components = {
             value="yes"
             onChange={(e) => setMarketingConsent(!e.target.checked)}
           />
-          <Text padding="20px 0">
+          <Text padding="20 px 0">
             Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
           </Text>
         </View>
@@ -91,7 +91,7 @@ const formFields = {
 const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signUp } = useAuthenticator((context) => [context.user, context.signUp]);
+  const { user } = useAuthenticator((context) => [context.user]);
   const [marketingConsent, setMarketingConsent] = useState(true);
 
   // Hook para obtener y registrar los atributos del usuario solo si está autenticado
@@ -104,21 +104,15 @@ const RegisterPage = () => {
     }
   }, [user, navigate, location]);
 
-  const handleSignUp = async (formData) => {
-    try {
-      const result = await signUp({
-        username: formData.username,
-        password: formData.password,
-        options: {
-          userAttributes: {
-            email: formData.email,
-            'custom:marketing_consent': marketingConsent.toString(),
-          },
-        },
-      });
-      console.log('User signed up successfully:', result);
-    } catch (error) {
-      console.error('Error signing up:', error);
+  const services = {
+    async handleSignUp(formData) {
+      let { username, password, attributes } = formData;
+      // Add marketing consent to attributes
+      attributes = {
+        ...attributes,
+        'custom:marketing_consent': marketingConsent.toString(),
+      };
+      return { username, password, attributes };
     }
   };
 
@@ -126,24 +120,17 @@ const RegisterPage = () => {
     <View className="auth-wrapper" style={{ background: 'white' }}>
       <Authenticator
         initialState="signUp"
-        components={{
-          ...components,
-          SignUp: {
-            ...components.SignUp,
-            Footer: () => components.SignUp.Footer({ setMarketingConsent }),
-          },
-        }}
+        components={components}
         formFields={formFields}
         signUpAttributes={['email']}
         socialProviders={['google']}
         theme={theme}
-        services={{
-          handleSignUp,
-        }}
+        services={services}
       >
-        {() => (
+        {({ signOut, user }) => (
           <View>
             <Text>{I18n.get('Procesando registro...')}</Text>
+            {user && <button onClick={signOut}>Sign out</button>}
           </View>
         )}
       </Authenticator>

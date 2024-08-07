@@ -6,6 +6,26 @@ import { I18n } from '@aws-amplify/core';
 import { theme } from './loginPageConfig';
 import { useUserAttributes } from '../hooks/useUserAttributes';
 
+const SignUpFooter = ({ setMarketingConsent }) => {
+  return (
+    <View textAlign="left" padding="20px">
+      <CheckboxField
+        label={
+          <Text>
+            No quiero recibir correos electrónicos sobre Talky, actualizaciones de productos y funciones relacionadas, ni tampoco prácticas recomendadas de marketing ni promociones de Talky. Al no marcar la casilla, acepto que se me suscriba de forma predeterminada.
+          </Text>
+        }
+        name="marketing-consent"
+        value="yes"
+        onChange={(e) => setMarketingConsent(!e.target.checked)}
+      />
+      <Text padding="20px 0">
+        Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
+      </Text>
+    </View>
+  );
+};
+
 const components = {
   Header() {
     const { tokens } = useTheme();
@@ -45,24 +65,8 @@ const components = {
         </Heading>
       );
     },
-    Footer() {
-      return (
-        <View textAlign="left" padding="20px">
-          <CheckboxField
-            label={
-              <Text>
-                No quiero recibir correos electrónicos sobre Talky, actualizaciones de productos y funciones relacionadas, ni tampoco prácticas recomendadas de marketing ni promociones de Talky. Al no marcar la casilla, acepto que se me suscriba de forma predeterminada.
-              </Text>
-            }
-            name="marketing-consent"
-            value="yes"
-            onChange={(e) => setMarketingConsent(!e.target.checked)}
-          />
-          <Text padding="20 px 0">
-            Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
-          </Text>
-        </View>
-      );
+    Footer(props) {
+      return <SignUpFooter setMarketingConsent={props.setMarketingConsent} />;
     },
   },
 };
@@ -96,7 +100,7 @@ const RegisterPage = () => {
 
   // Hook para obtener y registrar los atributos del usuario solo si está autenticado
   useUserAttributes(!!user);
-  
+
   React.useEffect(() => {
     if (user) {
       const from = location.state?.from?.pathname || '/chekout';
@@ -126,6 +130,7 @@ const RegisterPage = () => {
         socialProviders={['google']}
         theme={theme}
         services={services}
+        setMarketingConsent={setMarketingConsent}
       >
         {({ signOut, user }) => (
           <View>

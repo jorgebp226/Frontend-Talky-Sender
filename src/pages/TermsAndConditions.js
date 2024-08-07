@@ -38,6 +38,15 @@ const TermsAndConditions = () => {
         
         <h2>8. Ley Aplicable</h2>
         Estos Términos se regirán e interpretarán de acuerdo con las leyes de España. Cualquier disputa relacionada con estos Términos será sometida a la jurisdicción exclusiva de los tribunales de Madrid, España.
+
+        <h2>9. Recolección y Uso de Datos</h2>
+        Al utilizar nuestra App, usted acepta que podamos recolectar y utilizar sus datos personales y los datos de sus mensajes de WhatsApp para mejorar nuestros servicios y ofrecer análisis de rendimiento personalizados. Toda la información será manejada de acuerdo con nuestra Política de Privacidad.
+
+        <h2>10. Política de Uso Aceptable</h2>
+        Usted se compromete a no utilizar la App para enviar mensajes no solicitados o spam, ni para cualquier propósito ilegal o no autorizado. Nos reservamos el derecho de suspender o terminar su cuenta si se detecta un uso indebido de la App.
+
+        <h2>11. Confidencialidad</h2>
+        Ambas partes acuerdan mantener la confidencialidad de cualquier información confidencial a la que tengan acceso durante la duración del uso de la App. Esta obligación de confidencialidad permanecerá en vigor aun después de la terminación de estos Términos.
       </Text>
     </View>
   );

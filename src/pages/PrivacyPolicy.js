@@ -24,6 +24,7 @@ const PrivacyPolicy = () => {
           <li>Enviar mensajes personalizados a sus clientes.</li>
           <li>Realizar análisis de rendimiento de sus mensajes.</li>
           <li>Garantizar la seguridad de su cuenta y nuestros servicios.</li>
+          <li>Entrenar modelos de aprendizaje automático para mejorar nuestras recomendaciones y métricas.</li>
         </ul>
         
         <h2>4. Compartición de Información</h2>
@@ -48,6 +49,7 @@ const PrivacyPolicy = () => {
           <li>Solicitar la eliminación de sus datos personales.</li>
           <li>Oponerse al tratamiento de sus datos personales.</li>
           <li>Solicitar la portabilidad de sus datos.</li>
+          <li>Retirar su consentimiento en cualquier momento.</li>
         </ul>
         
         <h2>8. Cambios en la Política de Privacidad</h2>

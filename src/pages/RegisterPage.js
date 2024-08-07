@@ -3,7 +3,6 @@ import { Authenticator, useTheme, View, Image, Text, Heading, useAuthenticator, 
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css';
 import { I18n } from '@aws-amplify/core';
-import { Auth } from 'aws-amplify';
 import { theme } from './loginPageConfig';
 import { useUserAttributes } from '../hooks/useUserAttributes';
 
@@ -92,7 +91,7 @@ const formFields = {
 const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuthenticator((context) => [context.user]);
+  const { user, signUp } = useAuthenticator((context) => [context.user, context.signUp]);
   const [marketingConsent, setMarketingConsent] = useState(true);
 
   // Hook para obtener y registrar los atributos del usuario solo si está autenticado
@@ -107,15 +106,17 @@ const RegisterPage = () => {
 
   const handleSignUp = async (formData) => {
     try {
-      const { user } = await Auth.signUp({
+      const result = await signUp({
         username: formData.username,
         password: formData.password,
-        attributes: {
-          email: formData.email,
-          'custom:marketing_consent': marketingConsent.toString(),
+        options: {
+          userAttributes: {
+            email: formData.email,
+            'custom:marketing_consent': marketingConsent.toString(),
+          },
         },
       });
-      console.log('User signed up successfully:', user);
+      console.log('User signed up successfully:', result);
     } catch (error) {
       console.error('Error signing up:', error);
     }

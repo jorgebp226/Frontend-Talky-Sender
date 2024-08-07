@@ -34,7 +34,7 @@ const awsmobile = {
             "aws.cognito.signin.user.admin"
         ],
         "redirectSignIn": "https://www.betalky.es/chekout",
-        "redirectSignOut": "https://www.betalky.es",
+        "redirectSignOut": "https://www.betalky.es/login",
         "responseType": "code"
     },
     "federationTarget": "COGNITO_USER_POOLS",

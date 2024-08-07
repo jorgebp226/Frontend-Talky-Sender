@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Authenticator, useTheme, View, Image, Text, Heading, useAuthenticator, CheckboxField } from '@aws-amplify/ui-react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import '@aws-amplify/ui-react/styles.css';
 import { I18n } from '@aws-amplify/core';
+import { Auth } from 'aws-amplify';
 import { theme } from './loginPageConfig';
 import { useUserAttributes } from '../hooks/useUserAttributes';
 
@@ -45,7 +46,7 @@ const components = {
         </Heading>
       );
     },
-    Footer() {
+    Footer({ setMarketingConsent }) {
       return (
         <View textAlign="left" padding="20px">
           <CheckboxField
@@ -56,6 +57,7 @@ const components = {
             }
             name="marketing-consent"
             value="yes"
+            onChange={(e) => setMarketingConsent(!e.target.checked)}
           />
           <Text padding="20px 0">
             Al crear una cuenta, aceptas nuestras <Link to="/terms-and-conditions">Condiciones</Link> y declaras haber leído y estar de acuerdo con la <Link to="/privacy-policy">Declaración de privacidad global</Link>.
@@ -91,6 +93,7 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthenticator((context) => [context.user]);
+  const [marketingConsent, setMarketingConsent] = useState(true);
 
   // Hook para obtener y registrar los atributos del usuario solo si está autenticado
   useUserAttributes(!!user);
@@ -102,15 +105,40 @@ const RegisterPage = () => {
     }
   }, [user, navigate, location]);
 
+  const handleSignUp = async (formData) => {
+    try {
+      const { user } = await Auth.signUp({
+        username: formData.username,
+        password: formData.password,
+        attributes: {
+          email: formData.email,
+          'custom:marketing_consent': marketingConsent.toString(),
+        },
+      });
+      console.log('User signed up successfully:', user);
+    } catch (error) {
+      console.error('Error signing up:', error);
+    }
+  };
+
   return (
     <View className="auth-wrapper" style={{ background: 'white' }}>
       <Authenticator
         initialState="signUp"
-        components={components}
+        components={{
+          ...components,
+          SignUp: {
+            ...components.SignUp,
+            Footer: () => components.SignUp.Footer({ setMarketingConsent }),
+          },
+        }}
         formFields={formFields}
         signUpAttributes={['email']}
         socialProviders={['google']}
         theme={theme}
+        services={{
+          handleSignUp,
+        }}
       >
         {() => (
           <View>

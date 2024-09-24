@@ -231,7 +231,7 @@ function GroupSelectorPage() {
         {selectedGroups.map(group => (
           <div key={group.id} className="selected-group">
             <span className="selected-group-name">{group.name}</span>
-            <button className="remove-button" onClick={() => removeSelectedGroup(group.id)}>×</button>
+            <button className="remove-button" onClick={() => setSelectedGroups(selectedGroups.filter(g => g.id !== group.id))}>×</button>
           </div>
         ))}
       </div>

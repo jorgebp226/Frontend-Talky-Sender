@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './GroupSelectorPage.css'; // Asegúrate de crear este archivo
+import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
 
 function GroupSelectorPage() {
@@ -18,7 +18,15 @@ function GroupSelectorPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos'); // Lambda de grupos
+        const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
+        const userId = userAttributes?.sub;
+        
+        if (!userId) {
+          console.error('User ID not found in localStorage');
+          return;
+        }
+
+        const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', { user_id: userId });
         setGroups(response.data);
         setFilteredGroups(response.data);
       } catch (error) {
@@ -112,15 +120,24 @@ function GroupSelectorPage() {
       return;
     }
 
+    const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
+    const userId = userAttributes?.sub;
+    
+    if (!userId) {
+      console.error('User ID not found in localStorage');
+      return;
+    }
+
     const groupIds = selectedGroups.map(group => group.id);
     const payload = {
+      user_id: userId,
       groupIds: groupIds,
       contacts: phoneNumbers
     };
 
     try {
       setIsProcessing(true);
-      const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', payload); // Lambda de añadir usuarios
+      const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/add-users', payload);
       if (response.status === 200) {
         alert('Usuarios añadidos exitosamente.');
       } else {

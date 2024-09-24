@@ -27,20 +27,16 @@ function GroupSelectorPage() {
         }
 
         // Llamada a la API para obtener los grupos
-        const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', { user_id: userId });
+        const response = await axios.post(
+          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
+          { user_id: userId }
+        );
 
-        if (response.status === 200 && response.data.body) {
-          const groups_data = JSON.parse(response.data.body); // Parseamos el JSON de la cadena "body"
-          if (Array.isArray(groups_data)) {
-            setGroups(groups_data);
-            setFilteredGroups(groups_data);
-          } else {
-            console.error('Error: La respuesta de la API no es un array.');
-            setGroups([]);
-            setFilteredGroups([]);
-          }
+        if (response.status === 200 && Array.isArray(response.data)) {
+          setGroups(response.data); // La API ya devuelve un array, no es necesario parsear más.
+          setFilteredGroups(response.data);
         } else {
-          console.error('Error: Respuesta de la API no exitosa.');
+          console.error('Error: La respuesta de la API no contiene un array válido.');
           setGroups([]);
           setFilteredGroups([]);
         }
@@ -159,7 +155,10 @@ function GroupSelectorPage() {
 
     try {
       setIsProcessing(true);
-      const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', payload);
+      const response = await axios.post(
+        'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
+        payload
+      );
       if (response.status === 200) {
         alert('Usuarios añadidos exitosamente.');
         setSelectedGroups([]);

@@ -16,16 +16,16 @@ function GroupSelectorPage() {
   const [phoneNumbers, setPhoneNumbers] = useState([]);
   const [previewData, setPreviewData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);  // Barra de progreso
-  const [timeLeft, setTimeLeft] = useState(0);  // Tiempo restante estimado
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
   const intervalRef = useRef(null);
-  const navigate = useNavigate(); // Para redirigir
+  const navigate = useNavigate();
 
   // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 300)); // Espera para cargar localStorage
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         const userId = userAttributes?.sub;
         if (!userId) {
@@ -98,7 +98,7 @@ function GroupSelectorPage() {
       const sheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
       const headers = jsonData[0];
-      const firstFourRows = jsonData.slice(1, 5);
+      const firstFourRows = jsonData.slice(1, 5); // Solo las primeras 4 filas
       let phoneCol = '';
       headers.forEach((header, index) => {
         const isPhoneCol = firstFourRows.every(row => {
@@ -111,11 +111,11 @@ function GroupSelectorPage() {
           phoneCol = header;
         }
       });
-      setPhoneColumn(phoneCol);
+      setPhoneColumn(phoneCol); // Mostrar columna automáticamente seleccionada
       const phoneIndex = headers.indexOf(phoneCol);
       const phones = jsonData.slice(1).map(row => row[phoneIndex]?.toString().trim()).filter(phone => phone);
-      setPhoneNumbers(preprocessPhones(phones));
-      setPreviewData([headers, ...firstFourRows]);
+      setPhoneNumbers(preprocessPhones(phones));  // Preprocesar números
+      setPreviewData([headers, ...firstFourRows]); // Mostrar la vista previa
     };
     reader.readAsBinaryString(selectedFile);
   };
@@ -123,26 +123,44 @@ function GroupSelectorPage() {
   // Preprocesar los números de teléfono
   const preprocessPhones = (phones) => {
     return phones.map(phone => {
+      // Eliminar caracteres no numéricos
       let cleanedPhone = phone.replace(/\D/g, '');
       if (cleanedPhone.length === 9) {
+        // Añadir el prefijo 34 si tiene 9 dígitos
         cleanedPhone = '34' + cleanedPhone;
       } else if (cleanedPhone.length < 9) {
+        // Si tiene menos de 9 dígitos, se descarta
         cleanedPhone = '';
       }
       return cleanedPhone;
     }).filter(phone => phone !== '');
   };
 
-  const startProgressBar = (totalTime) => {
+  // Seleccionar manualmente la columna de teléfonos
+  const handleColumnSelect = (index) => {
+    const newPhoneColumn = previewData[0][index];
+    setPhoneColumn(newPhoneColumn);
+    const phones = previewData.slice(1).map(row => row[index]?.toString().trim()).filter(phone => phone);
+    setPhoneNumbers(preprocessPhones(phones)); // Preprocesar números actualizados
+  };
+
+  // Calcular el tiempo estimado para procesar los usuarios
+  const calculateTotalTime = () => {
+    return selectedGroups.length * phoneNumbers.length * 8; // 8 segundos por cada usuario
+  };
+
+  // Iniciar y actualizar la barra de progreso
+  const startProgressBar = () => {
+    const totalTime = calculateTotalTime();
     const startTime = Date.now();
     intervalRef.current = setInterval(() => {
-      const elapsedTime = (Date.now() - startTime) / 1000;
-      const percentage = Math.min((elapsedTime / totalTime) * 100, 100);
+      const elapsedTime = (Date.now() - startTime) / 1000; // segundos
+      const percentage = Math.min((elapsedTime / totalTime) * 100, 100); // Limitar al 100%
       setProgress(percentage);
-      setTimeLeft((totalTime - elapsedTime) / 60);
+      setTimeLeft((totalTime - elapsedTime) / 60); // minutos restantes
       if (percentage >= 100) {
         clearInterval(intervalRef.current);
-        navigate('/resumen-groups'); // Redirigir a /resumen-groups
+        navigate('/resumen-groups'); // Redirigir cuando termina
       }
     }, 1000);
   };
@@ -155,12 +173,14 @@ function GroupSelectorPage() {
     }
     const userAttributesStr = localStorage.getItem('userAttributes');
     if (!userAttributesStr) {
+      console.error('User attributes not found in localStorage');
       alert('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
       return;
     }
     const userAttributes = JSON.parse(userAttributesStr);
     const userId = userAttributes?.sub;
     if (!userId) {
+      console.error('User ID not found in localStorage');
       alert('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
       return;
     }
@@ -172,10 +192,7 @@ function GroupSelectorPage() {
     };
     try {
       setIsProcessing(true);
-      const totalTime = selectedGroups.length * phoneNumbers.length * 8;
-      setTimeLeft(totalTime / 60);
-      setProgress(0);
-      startProgressBar(totalTime); // Iniciar barra de progreso
+      startProgressBar(); // Iniciar la barra de progreso
       const response = await axios.post(
         'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
         payload
@@ -193,10 +210,11 @@ function GroupSelectorPage() {
         alert('Ocurrió un error al añadir los usuarios.');
       }
     } catch (error) {
+      console.error('Error al añadir usuarios:', error);
       alert('Ocurrió un error al añadir los usuarios.');
     } finally {
       setIsProcessing(false);
-      clearInterval(intervalRef.current);
+      clearInterval(intervalRef.current); // Asegurar que el intervalo se limpie
     }
   };
 

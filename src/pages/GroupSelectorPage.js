@@ -3,7 +3,7 @@ import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
 import excelIcon from '../assets/images/contacts-icon.png'; // Icono de Excel más pequeño
-import ProgressBar from './ProgressBar'; // Componente de barra de progreso
+import ProgressBar from '../components/ProgressBar';
 
 function GroupSelectorPage() {
   const [groups, setGroups] = useState([]);

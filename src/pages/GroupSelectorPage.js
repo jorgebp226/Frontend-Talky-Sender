@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './GroupSelectorPage.css';
+import './GroupSelectorPage.css'; // Asegúrate de crear este archivo
 import * as XLSX from 'xlsx';
 
 function GroupSelectorPage() {
-  const [groups, setGroups] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredGroups, setFilteredGroups] = useState([]);
-  const [selectedGroups, setSelectedGroups] = useState([]);
-  const [file, setFile] = useState(null);
-  const [phoneColumn, setPhoneColumn] = useState('');
-  const [phoneNumbers, setPhoneNumbers] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [message, setMessage] = useState('');
+  const [groups, setGroups] = useState([]); // Los grupos se guardan aquí como array de objetos
+  const [searchTerm, setSearchTerm] = useState(''); // El término de búsqueda
+  const [filteredGroups, setFilteredGroups] = useState([]); // Grupos filtrados para mostrar
+  const [selectedGroups, setSelectedGroups] = useState([]); // Los grupos seleccionados
+  const [file, setFile] = useState(null); // El archivo subido (Excel/CSV)
+  const [phoneColumn, setPhoneColumn] = useState(''); // La columna que contiene los números de teléfono
+  const [phoneNumbers, setPhoneNumbers] = useState([]); // Números de teléfono extraídos del archivo
+  const [isProcessing, setIsProcessing] = useState(false); // Estado de procesamiento (loading)
+  const [message, setMessage] = useState(''); // Mensajes de estado
 
-  // Fetch groups from API on mount
+  // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
     const fetchGroups = async () => {
       try {
@@ -26,40 +26,51 @@ function GroupSelectorPage() {
           return;
         }
 
+        // Llamada a la API para obtener los grupos
         const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', { user_id: userId });
-        setGroups(response.data);
-        setFilteredGroups(response.data);
+        
+        // Verificar si response.data es un array
+        if (Array.isArray(response.data)) {
+          setGroups(response.data); // Asignar los grupos a la variable de estado
+          setFilteredGroups(response.data); // Asignar grupos filtrados inicialmente
+        } else {
+          console.error('Error: La respuesta de la API no es un array.');
+          setGroups([]); // Asegurarse de que siempre es un array vacío en caso de error
+        }
       } catch (error) {
         console.error('Error fetching groups:', error);
+        setGroups([]); // Asignar un array vacío en caso de error
       }
     };
 
     fetchGroups();
   }, []);
 
-  // Filter groups based on search term
+  // Filtrar los grupos en función del término de búsqueda
   useEffect(() => {
     if (searchTerm === '') {
-      setFilteredGroups(groups);
+      setFilteredGroups(groups); // Mostrar todos los grupos si no hay término de búsqueda
     } else {
       const filtered = groups.filter(group =>
         group.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredGroups(filtered);
+      setFilteredGroups(filtered); // Actualizar los grupos filtrados
     }
   }, [searchTerm, groups]);
 
-  // Handle group selection
+  // Manejar la selección de un grupo
   const toggleGroupSelection = (group) => {
     const isSelected = selectedGroups.find(selected => selected.id === group.id);
     if (isSelected) {
+      // Si el grupo ya está seleccionado, quitarlo de la lista
       setSelectedGroups(selectedGroups.filter(selected => selected.id !== group.id));
     } else {
+      // Si el grupo no está seleccionado, añadirlo a la lista
       setSelectedGroups([...selectedGroups, group]);
     }
   };
 
-  // Handle file selection
+  // Manejar la subida de archivo
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -69,7 +80,7 @@ function GroupSelectorPage() {
     }
   };
 
-  // Process the uploaded file
+  // Procesar el archivo subido y extraer los números de teléfono
   const processFile = () => {
     if (!file) {
       alert('Por favor, selecciona un archivo primero.');
@@ -111,7 +122,7 @@ function GroupSelectorPage() {
     reader.readAsBinaryString(file);
   };
 
-  // Handle form submission
+  // Manejar el envío del formulario para añadir usuarios a los grupos seleccionados
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -128,6 +139,7 @@ function GroupSelectorPage() {
       return;
     }
 
+    // Obtener solo los IDs de los grupos seleccionados
     const groupIds = selectedGroups.map(group => group.id);
     const payload = {
       user_id: userId,
@@ -137,6 +149,7 @@ function GroupSelectorPage() {
 
     try {
       setIsProcessing(true);
+      // Llamada a la API para añadir los usuarios a los grupos seleccionados
       const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/add-users', payload);
       if (response.status === 200) {
         alert('Usuarios añadidos exitosamente.');

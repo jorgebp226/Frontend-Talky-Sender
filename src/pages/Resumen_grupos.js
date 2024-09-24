@@ -63,7 +63,7 @@ const BackButton = styled.button`
   }
 `;
 
-const ResumenEnvio = () => {
+const ResumenGrupos = () => {
   const navigate = useNavigate();
 
   const handleBackToDashboard = () => {

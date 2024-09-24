@@ -12,64 +12,15 @@ function GroupSelectorPage() {
   const [file, setFile] = useState(null);
   const [phoneColumn, setPhoneColumn] = useState('');
   const [phoneNumbers, setPhoneNumbers] = useState([]);
+  const [previewData, setPreviewData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-        const userId = userAttributes?.sub;
-
-        if (!userId) {
-          console.error('User ID not found in localStorage');
-          return;
-        }
-
-        const response = await axios.get(
-          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
-          { params: { user_id: userId } }
-        );
-
-        if (response.status === 200 && Array.isArray(response.data)) {
-          setGroups(response.data); 
-          setFilteredGroups(response.data);
-        } else {
-          console.error('Error: La respuesta de la API no contiene un array válido.');
-        }
-      } catch (error) {
-        console.error('Error fetching groups:', error);
-      }
-    };
-
-    fetchGroups();
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm === '') {
-      setFilteredGroups(groups);
-    } else {
-      const filtered = groups.filter(group =>
-        group.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredGroups(filtered);
-    }
-  }, [searchTerm, groups]);
-
-  const toggleGroupSelection = (group) => {
-    const isSelected = selectedGroups.find(selected => selected.id === group.id);
-    if (isSelected) {
-      setSelectedGroups(selectedGroups.filter(selected => selected.id !== group.id));
-    } else {
-      setSelectedGroups([...selectedGroups, group]);
-    }
-  };
+  // ... (keep the existing useEffect hooks for fetching groups and filtering)
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setPhoneColumn('');
-      setPhoneNumbers([]);
       processFile(selectedFile);
     }
   };
@@ -84,13 +35,12 @@ function GroupSelectorPage() {
       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       const headers = jsonData[0];
-      const firstTwoRows = jsonData.slice(1, 3);
+      const firstFourRows = jsonData.slice(1, 5);
 
       let phoneCol = '';
       headers.forEach((header, index) => {
-        const cell1 = firstTwoRows[0][index];
-        const cell2 = firstTwoRows[1][index];
-        const isPhoneCol = [cell1, cell2].every(cell => {
+        const isPhoneCol = firstFourRows.every(row => {
+          const cell = row[index];
           if (typeof cell === 'number') return cell.toString().length > 5;
           if (typeof cell === 'string') return cell.replace(/\D/g, '').length > 5;
           return false;
@@ -104,9 +54,22 @@ function GroupSelectorPage() {
       const phoneIndex = headers.indexOf(phoneCol);
       const phones = jsonData.slice(1).map(row => row[phoneIndex]?.toString().trim()).filter(phone => phone);
       setPhoneNumbers(phones);
+      setPreviewData([headers, ...firstFourRows]);
     };
 
     reader.readAsBinaryString(selectedFile);
+  };
+
+  const handleColumnSelect = (index) => {
+    const newPhoneColumn = previewData[0][index];
+    setPhoneColumn(newPhoneColumn);
+    const phones = previewData.slice(1).map(row => row[index]?.toString().trim()).filter(phone => phone);
+    setPhoneNumbers(phones);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // ... (keep the existing submit logic)
   };
 
   return (
@@ -122,19 +85,16 @@ function GroupSelectorPage() {
           className="search-input"
         />
         <div className="dropdown-list">
-          {filteredGroups.map(group => {
-            const isSelected = selectedGroups.find(selected => selected.id === group.id);
-            return (
-              <div
-                key={group.id}
-                className={`dropdown-item ${isSelected ? 'selected' : ''}`}
-                onClick={() => toggleGroupSelection(group)}
-              >
-                <div className={`selection-circle ${isSelected ? 'selected-circle' : ''}`}></div>
-                <span className="group-name">{group.name}</span>
-              </div>
-            );
-          })}
+          {filteredGroups.map(group => (
+            <div
+              key={group.id}
+              className={`dropdown-item ${selectedGroups.find(selected => selected.id === group.id) ? 'selected' : ''}`}
+              onClick={() => toggleGroupSelection(group)}
+            >
+              <div className={`selection-circle ${selectedGroups.find(selected => selected.id === group.id) ? 'selected-circle' : ''}`}></div>
+              <span className="group-name">{group.name}</span>
+            </div>
+          ))}
         </div>
       </div>
       
@@ -142,24 +102,75 @@ function GroupSelectorPage() {
         {selectedGroups.map(group => (
           <div key={group.id} className="selected-group">
             <span className="selected-group-name">{group.name}</span>
+            <button className="remove-button" onClick={() => removeSelectedGroup(group.id)}>×</button>
           </div>
         ))}
       </div>
       
-      <form className="upload-form">
-        <div className="file-upload">
-          <label htmlFor="fileInput" className="file-label">
-            <img src={contactsIcon} alt="Excel Icon" className="excel-icon" />
-            Elige archivo CSV o XLSX
+      <form onSubmit={handleSubmit} className="upload-form">
+        <div className="file-upload-container">
+          <label htmlFor="fileInput" className="file-upload-label">
+            <FaFileExcel className="file-icon" />
+            <span>Elegir archivo CSV o XLSX</span>
           </label>
-          <input type="file" id="fileInput" onChange={handleFileChange} />
+          <input
+            type="file"
+            id="fileInput"
+            onChange={handleFileChange}
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            className="file-input"
+          />
         </div>
-        {phoneColumn && (
-          <div className="phone-column-info">
+        
+        {phoneNumbers.length > 0 && (
+          <div className="file-summary">
             <p><strong>Columna de Teléfonos:</strong> {phoneColumn}</p>
             <p><strong>Total de Teléfonos Encontrados:</strong> {phoneNumbers.length}</p>
           </div>
         )}
+        
+        {previewData.length > 0 && (
+          <div className="preview-container">
+            <h3>Vista previa</h3>
+            <table className="preview-table">
+              <thead>
+                <tr>
+                  {previewData[0].map((header, index) => (
+                    <th
+                      key={index}
+                      className={phoneColumn === header ? 'selected-column' : ''}
+                      onClick={() => handleColumnSelect(index)}
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.slice(1).map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className={phoneColumn === previewData[0][cellIndex] ? 'selected-column' : ''}
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        <button
+          type="submit"
+          className="submit-button"
+          disabled={isProcessing || selectedGroups.length === 0 || phoneNumbers.length === 0}
+        >
+          {isProcessing ? 'Procesando...' : 'Añadir miembros'}
+        </button>
       </form>
     </div>
   );

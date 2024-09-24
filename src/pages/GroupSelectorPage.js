@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
+import contactsIcon from '../assets/images/contacts-icon.png';
 
 function GroupSelectorPage() {
   const [groups, setGroups] = useState([]);
@@ -12,15 +13,10 @@ function GroupSelectorPage() {
   const [phoneColumn, setPhoneColumn] = useState('');
   const [phoneNumbers, setPhoneNumbers] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [message, setMessage] = useState('');
 
-  // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        // Esperar un breve retardo para garantizar que el localStorage se haya cargado
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Esperar 100ms
-
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         const userId = userAttributes?.sub;
 
@@ -29,15 +25,9 @@ function GroupSelectorPage() {
           return;
         }
 
-        // Imprimir el userId en la consola para verificar
-        console.log('User ID:', userId);
-
-        // Llamada a la API para obtener los grupos
         const response = await axios.get(
-          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', {
-            params: { user_id: userId },  // Usar params si es un GET
-            headers: { 'Content-Type': 'application/json' }  // Asegúrate de enviar los encabezados correctos
-          }
+          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
+          { params: { user_id: userId } }
         );
 
         if (response.status === 200 && Array.isArray(response.data)) {
@@ -45,20 +35,15 @@ function GroupSelectorPage() {
           setFilteredGroups(response.data);
         } else {
           console.error('Error: La respuesta de la API no contiene un array válido.');
-          setGroups([]);
-          setFilteredGroups([]);
         }
       } catch (error) {
         console.error('Error fetching groups:', error);
-        setGroups([]);
-        setFilteredGroups([]);
       }
     };
 
     fetchGroups();
   }, []);
 
-  // Filtrar los grupos en función del término de búsqueda
   useEffect(() => {
     if (searchTerm === '') {
       setFilteredGroups(groups);
@@ -70,7 +55,6 @@ function GroupSelectorPage() {
     }
   }, [searchTerm, groups]);
 
-  // Manejar la selección de un grupo
   const toggleGroupSelection = (group) => {
     const isSelected = selectedGroups.find(selected => selected.id === group.id);
     if (isSelected) {
@@ -80,33 +64,21 @@ function GroupSelectorPage() {
     }
   };
 
-  // Manejar la eliminación de un grupo seleccionado
-  const removeSelectedGroup = (groupId) => {
-    setSelectedGroups(selectedGroups.filter(group => group.id !== groupId));
-  };
-
-  // Manejar la subida de archivo
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
       setPhoneColumn('');
       setPhoneNumbers([]);
+      processFile(selectedFile);
     }
   };
 
-  // Procesar el archivo subido y extraer los números de teléfono
-  const processFile = () => {
-    if (!file) {
-      alert('Por favor, selecciona un archivo primero.');
-      return;
-    }
-
+  const processFile = (selectedFile) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
       const data = evt.target.result;
       const workbook = XLSX.read(data, { type: 'binary' });
-
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
@@ -134,54 +106,7 @@ function GroupSelectorPage() {
       setPhoneNumbers(phones);
     };
 
-    reader.readAsBinaryString(file);
-  };
-
-  // Manejar el envío del formulario para añadir usuarios a los grupos seleccionados
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (selectedGroups.length === 0 || !file || phoneNumbers.length === 0) {
-      alert('Por favor completa todos los campos.');
-      return;
-    }
-
-    const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-    const userId = userAttributes?.sub;
-    
-    if (!userId) {
-      console.error('User ID not found in localStorage');
-      return;
-    }
-
-    const groupIds = selectedGroups.map(group => group.id);
-    const payload = {
-      user_id: userId,
-      groupIds: groupIds,
-      contacts: phoneNumbers
-    };
-
-    try {
-      setIsProcessing(true);
-      const response = await axios.post(
-        'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
-        payload
-      );
-      if (response.status === 200) {
-        alert('Usuarios añadidos exitosamente.');
-        setSelectedGroups([]);
-        setFile(null);
-        setPhoneColumn('');
-        setPhoneNumbers([]);
-      } else {
-        alert('Ocurrió un error al añadir los usuarios.');
-      }
-    } catch (error) {
-      console.error('Error al añadir usuarios:', error);
-      alert('Ocurrió un error al añadir los usuarios.');
-    } finally {
-      setIsProcessing(false);
-    }
+    reader.readAsBinaryString(selectedFile);
   };
 
   return (
@@ -217,16 +142,17 @@ function GroupSelectorPage() {
         {selectedGroups.map(group => (
           <div key={group.id} className="selected-group">
             <span className="selected-group-name">{group.name}</span>
-            <button className="remove-button" onClick={() => removeSelectedGroup(group.id)}>×</button>
           </div>
         ))}
       </div>
       
-      <form onSubmit={handleSubmit} className="upload-form">
+      <form className="upload-form">
         <div className="file-upload">
-          <label htmlFor="fileInput" className="file-label">Subir Archivo Excel o CSV:</label>
+          <label htmlFor="fileInput" className="file-label">
+            <img src={contactsIcon} alt="Excel Icon" className="excel-icon" />
+            Elige archivo CSV o XLSX
+          </label>
           <input type="file" id="fileInput" onChange={handleFileChange} />
-          <button type="button" className="process-button" onClick={processFile}>Procesar Archivo</button>
         </div>
         {phoneColumn && (
           <div className="phone-column-info">
@@ -234,9 +160,6 @@ function GroupSelectorPage() {
             <p><strong>Total de Teléfonos Encontrados:</strong> {phoneNumbers.length}</p>
           </div>
         )}
-        <button type="submit" className="submit-button" disabled={isProcessing}>
-          {isProcessing ? 'Procesando...' : 'Enviar Usuarios'}
-        </button>
       </form>
     </div>
   );

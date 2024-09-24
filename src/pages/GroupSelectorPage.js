@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
-import excelIcon from '../assets/images/excel-icon.png'; // Icono de Excel más pequeño
+import excelIcon from '../assets/images/contacts-icon.png'; // Icono de Excel más pequeño
 
 function GroupSelectorPage() {
   const [groups, setGroups] = useState([]);

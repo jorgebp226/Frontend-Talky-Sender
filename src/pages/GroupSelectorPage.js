@@ -20,7 +20,7 @@ function GroupSelectorPage() {
       try {
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         const userId = userAttributes?.sub;
-        
+
         if (!userId) {
           console.error('User ID not found in localStorage');
           return;
@@ -28,9 +28,9 @@ function GroupSelectorPage() {
 
         // Llamada a la API para obtener los grupos
         const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', { user_id: userId });
-        
+
         if (response.status === 200 && response.data.body) {
-          const groups_data = JSON.parse(response.data.body);
+          const groups_data = JSON.parse(response.data.body); // Parseamos el JSON de la cadena "body"
           if (Array.isArray(groups_data)) {
             setGroups(groups_data);
             setFilteredGroups(groups_data);
@@ -162,7 +162,6 @@ function GroupSelectorPage() {
       const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', payload);
       if (response.status === 200) {
         alert('Usuarios añadidos exitosamente.');
-        // Opcional: Limpiar el formulario después del envío exitoso
         setSelectedGroups([]);
         setFile(null);
         setPhoneColumn('');

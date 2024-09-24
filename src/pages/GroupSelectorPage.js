@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
-import excelIcon from '../assets/images/contacts-icon.png'; // Icono de Excel más pequeño
+import excelIcon from '../assets/images/contacts-icon.png';
 import ProgressBar from '../components/ProgressBar';
+import { useNavigate } from 'react-router-dom';
 
 function GroupSelectorPage() {
   const [groups, setGroups] = useState([]);
@@ -15,9 +16,10 @@ function GroupSelectorPage() {
   const [phoneNumbers, setPhoneNumbers] = useState([]);
   const [previewData, setPreviewData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);  // Barra de progreso
-  const [timeLeft, setTimeLeft] = useState(0);  // Tiempo restante estimado
-  const intervalRef = useRef(null); // Referencia para el intervalo
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const intervalRef = useRef(null);
+  const navigate = useNavigate();
 
   // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
@@ -142,7 +144,6 @@ function GroupSelectorPage() {
     setPhoneNumbers(preprocessPhones(phones)); // Preprocesar números actualizados
   };
 
-  // Barra de progreso dinámica
   const startProgressBar = (totalTime) => {
     const startTime = Date.now();
     intervalRef.current = setInterval(() => {
@@ -152,12 +153,11 @@ function GroupSelectorPage() {
       setTimeLeft((totalTime - elapsedTime) / 60);  // minutos restantes
       if (percentage >= 100) {
         clearInterval(intervalRef.current);
-        window.location.href = '/resumen-groups'; // Redirigir cuando termina
+        navigate('/resumen-groups'); // Redirigir cuando termina
       }
     }, 1000);
   };
 
-  // Manejar el envío del formulario para añadir usuarios a los grupos seleccionados
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedGroups.length === 0 || !file || phoneNumbers.length === 0) {
@@ -202,6 +202,7 @@ function GroupSelectorPage() {
         setPreviewData([]);
         setProgress(0);
         setTimeLeft(0);
+        navigate('/resumen-groups'); // Redirigir a la página de resumen
       } else {
         alert('Ocurrió un error al añadir los usuarios.');
       }
@@ -214,7 +215,6 @@ function GroupSelectorPage() {
     }
   };
 
-  // Limpiar el intervalo al desmontar el componente
   useEffect(() => {
     return () => clearInterval(intervalRef.current);
   }, []);
@@ -257,7 +257,7 @@ function GroupSelectorPage() {
 
       <form onSubmit={handleSubmit} className="upload-form">
         <h3>Añade los contactos</h3>
-        <div className="file-upload-container"> {/* Alineación a la izquierda */}
+        <div className="file-upload-container">
           <label htmlFor="fileInput" className="file-upload-label">
             <img src={excelIcon} alt="Excel Icon" className="file-icon" />
             <span>Elegir archivo CSV o XLSX</span>

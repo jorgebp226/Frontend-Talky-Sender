@@ -12,14 +12,14 @@ function GroupSelectorPage() {
   const [file, setFile] = useState(null);
   const [phoneColumn, setPhoneColumn] = useState('');
   const [phoneNumbers, setPhoneNumbers] = useState([]);
+  const [previewData, setPreviewData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        // Esperar un breve retardo para garantizar que el localStorage se haya cargado
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Esperar 3 segundos
+        await new Promise(resolve => setTimeout(resolve, 300)); // Espera para cargar localStorage
 
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         const userId = userAttributes?.sub;
@@ -32,13 +32,13 @@ function GroupSelectorPage() {
         // Llamada a la API para obtener los grupos
         const response = await axios.get(
           'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', {
-            params: { user_id: userId },  // Usar params si es un GET
-            headers: { 'Content-Type': 'application/json' }  // Asegúrate de enviar los encabezados correctos
+            params: { user_id: userId },
+            headers: { 'Content-Type': 'application/json' }
           }
         );
 
         if (response.status === 200 && Array.isArray(response.data)) {
-          setGroups(response.data); 
+          setGroups(response.data);
           setFilteredGroups(response.data);
         } else {
           console.error('Error: La respuesta de la API no contiene un array válido.');
@@ -89,16 +89,12 @@ function GroupSelectorPage() {
       setFile(selectedFile);
       setPhoneColumn('');
       setPhoneNumbers([]);
+      processFile(selectedFile); // Procesar archivo automáticamente
     }
   };
 
   // Procesar el archivo subido y extraer los números de teléfono
-  const processFile = () => {
-    if (!file) {
-      alert('Por favor, selecciona un archivo primero.');
-      return;
-    }
-
+  const processFile = (selectedFile) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
       const data = evt.target.result;
@@ -109,13 +105,12 @@ function GroupSelectorPage() {
       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       const headers = jsonData[0];
-      const firstTwoRows = jsonData.slice(1, 3);
+      const firstFourRows = jsonData.slice(1, 5); // Solo las primeras 4 filas
 
       let phoneCol = '';
       headers.forEach((header, index) => {
-        const cell1 = firstTwoRows[0][index];
-        const cell2 = firstTwoRows[1][index];
-        const isPhoneCol = [cell1, cell2].every(cell => {
+        const isPhoneCol = firstFourRows.every(row => {
+          const cell = row[index];
           if (typeof cell === 'number') return cell.toString().length > 5;
           if (typeof cell === 'string') return cell.replace(/\D/g, '').length > 5;
           return false;
@@ -125,13 +120,22 @@ function GroupSelectorPage() {
         }
       });
 
-      setPhoneColumn(phoneCol);
+      setPhoneColumn(phoneCol); // Mostrar columna automáticamente seleccionada
       const phoneIndex = headers.indexOf(phoneCol);
       const phones = jsonData.slice(1).map(row => row[phoneIndex]?.toString().trim()).filter(phone => phone);
       setPhoneNumbers(phones);
+      setPreviewData([headers, ...firstFourRows]); // Mostrar la vista previa
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsBinaryString(selectedFile);
+  };
+
+  // Seleccionar manualmente la columna de teléfonos
+  const handleColumnSelect = (index) => {
+    const newPhoneColumn = previewData[0][index];
+    setPhoneColumn(newPhoneColumn);
+    const phones = previewData.slice(1).map(row => row[index]?.toString().trim()).filter(phone => phone);
+    setPhoneNumbers(phones);
   };
 
   // Manejar el envío del formulario para añadir usuarios a los grupos seleccionados
@@ -183,7 +187,7 @@ function GroupSelectorPage() {
 
   return (
     <div className="group-selector-container">
-      <h2>Selecciona los Grupos de WhatsApp</h2>
+      <h2 style={{ textAlign: 'left' }}>Selecciona los Grupos de WhatsApp</h2>
       
       <div className="dropdown-container">
         <input
@@ -218,11 +222,13 @@ function GroupSelectorPage() {
           </div>
         ))}
       </div>
-      
+
       <form onSubmit={handleSubmit} className="upload-form">
+        <h3 style={{ textAlign: 'left' }}>Añade los contactos</h3> {/* Título añadido a la izquierda */}
+
         <div className="file-upload-container">
           <label htmlFor="fileInput" className="file-upload-label">
-            <img src={excelIcon} alt="Excel Icon" className="file-icon" style={{ width: '20px', height: '20px' }} /> {/* Imagen de Excel más pequeña */}
+            <img src={excelIcon} alt="Excel Icon" className="file-icon" style={{ width: '20px', height: '20px' }} />
             <span>Elegir archivo CSV o XLSX</span>
           </label>
           <input
@@ -240,9 +246,42 @@ function GroupSelectorPage() {
             <p><strong>Total de Teléfonos Encontrados:</strong> {phoneNumbers.length}</p>
           </div>
         )}
-
-        <button type="button" className="process-button" onClick={processFile}>Procesar Archivo</button>
-
+        
+        {previewData.length > 0 && (
+          <div className="preview-container">
+            <h3>Vista previa</h3>
+            <table className="preview-table">
+              <thead>
+                <tr>
+                  {previewData[0].map((header, index) => (
+                    <th
+                      key={index}
+                      className={phoneColumn === header ? 'selected-column' : ''}
+                      onClick={() => handleColumnSelect(index)}
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.slice(1).map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className={phoneColumn === previewData[0][cellIndex] ? 'selected-column' : ''}
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
         <button
           type="submit"
           className="submit-button"

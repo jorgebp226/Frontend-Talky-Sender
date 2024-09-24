@@ -1,158 +1,183 @@
 .group-selector-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .group-selector-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333333;
-  }
-  
-  .dropdown-container {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  
-  .search-input {
-    width: 100%;
-    padding: 10px 15px;
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-  .dropdown-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #cccccc;
-    border-top: none;
-    border-radius: 0 0 5px 5px;
-  }
-  
-  .dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .selection-circle {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #3b82f6;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  
-  .selected-circle {
-    background-color: #3b82f6;
-  }
-  
-  .group-name {
-    flex-grow: 1;
-    color: #333333;
-  }
-  
-  .selected-groups-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .selected-group {
-    display: flex;
-    align-items: center;
-    background-color: #e0f2fe;
-    border: 1px solid #3b82f6;
-    border-radius: 5px;
-    padding: 5px 10px;
-  }
-  
-  .selected-group-name {
-    margin-right: 10px;
-    color: #3b82f6;
-  }
-  
-  .remove-button {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-size: 18px;
-    cursor: pointer;
-  }
-  
-  .upload-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .file-upload {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .file-label {
-    flex-shrink: 0;
-    width: 200px;
-    font-weight: bold;
-    color: #333333;
-  }
-  
-  .file-upload input[type="file"] {
-    flex-grow: 1;
-  }
-  
-  .process-button {
-    padding: 10px 20px;
-    background-color: #3b82f6;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .process-button:hover {
-    background-color: #2563eb;
-  }
-  
-  .phone-column-info {
-    background-color: #f0f9ff;
-    border: 1px solid #bae6fd;
-    padding: 10px 15px;
-    border-radius: 5px;
-  }
-  
-  .submit-button {
-    padding: 15px 20px;
-    background-color: #10b981;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-  }
-  
-  .submit-button:hover {
-    background-color: #059669;
-  }
-  
-  .submit-button:disabled {
-    background-color: #a7f3d0;
-    cursor: not-allowed;
-  }
-  
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.group-selector-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.dropdown-container {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.dropdown-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.selection-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #6b7280;
+  border-radius: 50%;
+  margin-right: 15px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.selected-circle {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.group-name {
+  flex-grow: 1;
+  color: #374151;
+  font-size: 16px;
+}
+
+.selected-groups-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.selected-group {
+  display: flex;
+  align-items: center;
+  background-color: #e0f2fe;
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selected-group-name {
+  margin-right: 10px;
+  color: #3b82f6;
+  font-size: 14px;
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.remove-button:hover {
+  color: #dc2626;
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.file-label {
+  flex-shrink: 0;
+  width: 220px;
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.file-upload input[type="file"] {
+  flex-grow: 1;
+}
+
+.process-button {
+  padding: 10px 22px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.process-button:hover {
+  background-color: #2563eb;
+}
+
+.phone-column-info {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 15px 20px;
+  border-radius: 8px;
+  color: #1e3a8a;
+  font-size: 16px;
+}
+
+.submit-button {
+  padding: 15px 25px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #059669;
+}
+
+.submit-button:disabled {
+  background-color: #a7f3d0;
+  cursor: not-allowed;
+}

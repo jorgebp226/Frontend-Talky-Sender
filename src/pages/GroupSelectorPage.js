@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './GroupSelectorPage.css'; // Asegúrate de crear este archivo
+import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
 
 function GroupSelectorPage() {
-  const [groups, setGroups] = useState([]); // Los grupos se guardan aquí como array de objetos
-  const [searchTerm, setSearchTerm] = useState(''); // El término de búsqueda
-  const [filteredGroups, setFilteredGroups] = useState([]); // Grupos filtrados para mostrar
-  const [selectedGroups, setSelectedGroups] = useState([]); // Los grupos seleccionados
-  const [file, setFile] = useState(null); // El archivo subido (Excel/CSV)
-  const [phoneColumn, setPhoneColumn] = useState(''); // La columna que contiene los números de teléfono
-  const [phoneNumbers, setPhoneNumbers] = useState([]); // Números de teléfono extraídos del archivo
-  const [isProcessing, setIsProcessing] = useState(false); // Estado de procesamiento (loading)
-  const [message, setMessage] = useState(''); // Mensajes de estado
+  const [groups, setGroups] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredGroups, setFilteredGroups] = useState([]);
+  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [file, setFile] = useState(null);
+  const [phoneColumn, setPhoneColumn] = useState('');
+  const [phoneNumbers, setPhoneNumbers] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [message, setMessage] = useState('');
 
   // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
@@ -29,17 +29,25 @@ function GroupSelectorPage() {
         // Llamada a la API para obtener los grupos
         const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', { user_id: userId });
         
-        // Verificar si response.data es un array
-        if (Array.isArray(response.data)) {
-          setGroups(response.data); // Asignar los grupos a la variable de estado
-          setFilteredGroups(response.data); // Asignar grupos filtrados inicialmente
+        if (response.status === 200 && response.data.body) {
+          const groups_data = JSON.parse(response.data.body);
+          if (Array.isArray(groups_data)) {
+            setGroups(groups_data);
+            setFilteredGroups(groups_data);
+          } else {
+            console.error('Error: La respuesta de la API no es un array.');
+            setGroups([]);
+            setFilteredGroups([]);
+          }
         } else {
-          console.error('Error: La respuesta de la API no es un array.');
-          setGroups([]); // Asegurarse de que siempre es un array vacío en caso de error
+          console.error('Error: Respuesta de la API no exitosa.');
+          setGroups([]);
+          setFilteredGroups([]);
         }
       } catch (error) {
         console.error('Error fetching groups:', error);
-        setGroups([]); // Asignar un array vacío en caso de error
+        setGroups([]);
+        setFilteredGroups([]);
       }
     };
 
@@ -49,12 +57,12 @@ function GroupSelectorPage() {
   // Filtrar los grupos en función del término de búsqueda
   useEffect(() => {
     if (searchTerm === '') {
-      setFilteredGroups(groups); // Mostrar todos los grupos si no hay término de búsqueda
+      setFilteredGroups(groups);
     } else {
       const filtered = groups.filter(group =>
         group.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredGroups(filtered); // Actualizar los grupos filtrados
+      setFilteredGroups(filtered);
     }
   }, [searchTerm, groups]);
 
@@ -62,12 +70,15 @@ function GroupSelectorPage() {
   const toggleGroupSelection = (group) => {
     const isSelected = selectedGroups.find(selected => selected.id === group.id);
     if (isSelected) {
-      // Si el grupo ya está seleccionado, quitarlo de la lista
       setSelectedGroups(selectedGroups.filter(selected => selected.id !== group.id));
     } else {
-      // Si el grupo no está seleccionado, añadirlo a la lista
       setSelectedGroups([...selectedGroups, group]);
     }
+  };
+
+  // Manejar la eliminación de un grupo seleccionado
+  const removeSelectedGroup = (groupId) => {
+    setSelectedGroups(selectedGroups.filter(group => group.id !== groupId));
   };
 
   // Manejar la subida de archivo
@@ -115,7 +126,7 @@ function GroupSelectorPage() {
 
       setPhoneColumn(phoneCol);
       const phoneIndex = headers.indexOf(phoneCol);
-      const phones = jsonData.slice(1).map(row => row[phoneIndex].toString());
+      const phones = jsonData.slice(1).map(row => row[phoneIndex]?.toString().trim()).filter(phone => phone);
       setPhoneNumbers(phones);
     };
 
@@ -139,7 +150,6 @@ function GroupSelectorPage() {
       return;
     }
 
-    // Obtener solo los IDs de los grupos seleccionados
     const groupIds = selectedGroups.map(group => group.id);
     const payload = {
       user_id: userId,
@@ -149,15 +159,20 @@ function GroupSelectorPage() {
 
     try {
       setIsProcessing(true);
-      // Llamada a la API para añadir los usuarios a los grupos seleccionados
-      const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/add-users', payload);
+      const response = await axios.post('https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', payload);
       if (response.status === 200) {
         alert('Usuarios añadidos exitosamente.');
+        // Opcional: Limpiar el formulario después del envío exitoso
+        setSelectedGroups([]);
+        setFile(null);
+        setPhoneColumn('');
+        setPhoneNumbers([]);
       } else {
         alert('Ocurrió un error al añadir los usuarios.');
       }
     } catch (error) {
       console.error('Error al añadir usuarios:', error);
+      alert('Ocurrió un error al añadir los usuarios.');
     } finally {
       setIsProcessing(false);
     }
@@ -166,6 +181,7 @@ function GroupSelectorPage() {
   return (
     <div className="group-selector-container">
       <h2>Selecciona los Grupos de WhatsApp</h2>
+      
       <div className="dropdown-container">
         <input
           type="text"
@@ -175,30 +191,44 @@ function GroupSelectorPage() {
           className="search-input"
         />
         <div className="dropdown-list">
-          {filteredGroups.map(group => (
-            <div
-              key={group.id}
-              className={`dropdown-item ${selectedGroups.find(selected => selected.id === group.id) ? 'selected' : ''}`}
-              onClick={() => toggleGroupSelection(group)}
-            >
-              <span>{group.name}</span>
-            </div>
-          ))}
+          {filteredGroups.map(group => {
+            const isSelected = selectedGroups.find(selected => selected.id === group.id);
+            return (
+              <div
+                key={group.id}
+                className={`dropdown-item ${isSelected ? 'selected' : ''}`}
+                onClick={() => toggleGroupSelection(group)}
+              >
+                <div className={`selection-circle ${isSelected ? 'selected-circle' : ''}`}></div>
+                <span className="group-name">{group.name}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
+      
+      <div className="selected-groups-container">
+        {selectedGroups.map(group => (
+          <div key={group.id} className="selected-group">
+            <span className="selected-group-name">{group.name}</span>
+            <button className="remove-button" onClick={() => removeSelectedGroup(group.id)}>×</button>
+          </div>
+        ))}
+      </div>
+      
       <form onSubmit={handleSubmit} className="upload-form">
         <div className="file-upload">
-          <label htmlFor="fileInput">Subir Archivo Excel o CSV:</label>
+          <label htmlFor="fileInput" className="file-label">Subir Archivo Excel o CSV:</label>
           <input type="file" id="fileInput" onChange={handleFileChange} />
-          <button type="button" onClick={processFile}>Procesar Archivo</button>
+          <button type="button" className="process-button" onClick={processFile}>Procesar Archivo</button>
         </div>
         {phoneColumn && (
-          <div>
-            <p>Columna de Teléfonos: {phoneColumn}</p>
-            <p>Total de Teléfonos Encontrados: {phoneNumbers.length}</p>
+          <div className="phone-column-info">
+            <p><strong>Columna de Teléfonos:</strong> {phoneColumn}</p>
+            <p><strong>Total de Teléfonos Encontrados:</strong> {phoneNumbers.length}</p>
           </div>
         )}
-        <button type="submit" disabled={isProcessing}>
+        <button type="submit" className="submit-button" disabled={isProcessing}>
           {isProcessing ? 'Procesando...' : 'Enviar Usuarios'}
         </button>
       </form>

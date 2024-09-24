@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import SendMessages from './pages/SendMessages';
 import ResumenEnvio from './pages/ResumenEnvio';
+import ResumenGrupos from'./pages/Resumen_grupos';
 import Profile from './pages/Profile';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -72,6 +73,7 @@ function AppContent() {
           <Route path="/send-messages" element={<RequireAuth><SendMessages /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/resumen" element={<RequireAuth><ResumenEnvio /></RequireAuth>} />
+          <Route path="/resumen-groups" element={<RequireAuth><ResumenGrupos /></RequireAuth>} />
           {/* Agrega la nueva ruta para GroupSelectorPage */}
           <Route path="/group-selector" element={<RequireAuth><GroupSelectorPage /></RequireAuth>} />
         </Routes>

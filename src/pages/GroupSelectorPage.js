@@ -34,8 +34,10 @@ function GroupSelectorPage() {
 
         // Llamada a la API para obtener los grupos
         const response = await axios.get(
-          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
-          { params: { user_id: userId } }
+          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', {
+            params: { user_id: userId },  // Usar params si es un GET
+            headers: { 'Content-Type': 'application/json' }  // Asegúrate de enviar los encabezados correctos
+          }
         );
 
         if (response.status === 200 && Array.isArray(response.data)) {

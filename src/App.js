@@ -18,7 +18,7 @@ import SurveyStep1 from './components/Survey/SurveyStep1';
 import SurveyStep2 from './components/Survey/SurveyStep2';
 import SurveyStep3 from './components/Survey/SurveyStep3';
 import SurveyStep4 from './components/Survey/SurveyStep4';
-import LoadingPage from './pages/LoadingPage'; // Asegúrate de la ruta correcta
+import LoadingPage from './pages/LoadingPage';
 import { I18n } from '@aws-amplify/core';
 import PricingPage from './pages/PricingPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -26,6 +26,9 @@ import SuccessPage from './pages/SuccessPage';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import axios from 'axios';
+
+// Importa el nuevo componente
+import GroupSelectorPage from './pages/GroupSelectorPage';
 
 Amplify.configure(awsExports);
 I18n.setLanguage('es');
@@ -69,6 +72,8 @@ function AppContent() {
           <Route path="/send-messages" element={<RequireAuth><SendMessages /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/resumen" element={<RequireAuth><ResumenEnvio /></RequireAuth>} />
+          {/* Agrega la nueva ruta para GroupSelectorPage */}
+          <Route path="/group-selector" element={<RequireAuth><GroupSelectorPage /></RequireAuth>} />
         </Routes>
       </main>
       <Footer />

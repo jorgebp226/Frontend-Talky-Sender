@@ -18,7 +18,7 @@ function GroupSelectorPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get('https://your-api-gateway-endpoint/groups'); // Reemplaza con tu endpoint real
+        const response = await axios.get('http://52.47.138.185:3000/get-groups'); // Reemplaza con tu endpoint real
         setGroups(response.data);
         setFilteredGroups(response.data);
       } catch (error) {

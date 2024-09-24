@@ -371,7 +371,7 @@ const Dashboard = ({ user }) => {
             <div className="performance-item">
               <img src={`${process.env.PUBLIC_URL}/iconotalky.png`} alt="Sentimiento general Icono" />
               <span>Sentimiento general</span>
-              <strong>70%/</strong>
+              <strong>70%</strong>
             </div>
           </div>
         </section>

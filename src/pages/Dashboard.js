@@ -171,6 +171,10 @@ const Dashboard = ({ user }) => {
           </div>
         </div>
         <nav className="sidebar-nav">
+        <Link to="/group-selector">
+            <img src={`${process.env.PUBLIC_URL}/community.png`} alt="Público Icono" />
+            Grupos\Comunidades
+          </Link>
           <Link to="/public">
             <img src={`${process.env.PUBLIC_URL}/public.png`} alt="Público Icono" />
             Público

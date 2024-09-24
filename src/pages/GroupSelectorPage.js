@@ -18,6 +18,9 @@ function GroupSelectorPage() {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
+        // Esperar un breve retardo para garantizar que el localStorage se haya cargado
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Esperar 100ms
+
         const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
         const userId = userAttributes?.sub;
 
@@ -26,14 +29,17 @@ function GroupSelectorPage() {
           return;
         }
 
+        // Imprimir el userId en la consola para verificar
+        console.log('User ID:', userId);
+
         // Llamada a la API para obtener los grupos
         const response = await axios.get(
           'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
-          { user_id: userId }
+          { params: { user_id: userId } }
         );
 
         if (response.status === 200 && Array.isArray(response.data)) {
-          setGroups(response.data); // La API ya devuelve un array, no es necesario parsear más.
+          setGroups(response.data); 
           setFilteredGroups(response.data);
         } else {
           console.error('Error: La respuesta de la API no contiene un array válido.');

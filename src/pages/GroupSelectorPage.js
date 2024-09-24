@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
-import contactsIcon from '../assets/images/contacts-icon.png';
+import excelIcon from '../assets/images/contacts-icon.png';// Reemplazamos el ícono de Excel
 
 function GroupSelectorPage() {
   const [groups, setGroups] = useState([]);
@@ -15,7 +15,20 @@ function GroupSelectorPage() {
   const [previewData, setPreviewData] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // ... (keep the existing useEffect hooks for fetching groups and filtering)
+  // Función para alternar la selección del grupo
+  const toggleGroupSelection = (group) => {
+    const isSelected = selectedGroups.find(selected => selected.id === group.id);
+    if (isSelected) {
+      setSelectedGroups(selectedGroups.filter(selected => selected.id !== group.id));
+    } else {
+      setSelectedGroups([...selectedGroups, group]);
+    }
+  };
+
+  // Función para eliminar un grupo seleccionado
+  const removeSelectedGroup = (groupId) => {
+    setSelectedGroups(selectedGroups.filter(group => group.id !== groupId));
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -69,7 +82,7 @@ function GroupSelectorPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // ... (keep the existing submit logic)
+    // Lógica para enviar los datos
   };
 
   return (
@@ -110,7 +123,7 @@ function GroupSelectorPage() {
       <form onSubmit={handleSubmit} className="upload-form">
         <div className="file-upload-container">
           <label htmlFor="fileInput" className="file-upload-label">
-            <FaFileExcel className="file-icon" />
+            <img src={excelIcon} alt="Excel Icon" className="file-icon" /> {/* Usamos imagen PNG */}
             <span>Elegir archivo CSV o XLSX</span>
           </label>
           <input

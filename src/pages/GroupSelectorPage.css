@@ -194,3 +194,40 @@
   background-color: #93c5fd;
   cursor: not-allowed;
 }
+
+/* GroupSelectorPage.css */
+
+/* ... (otras clases existentes) ... */
+
+/* Modificar la alineación del contenedor de subida de archivos */
+.file-upload-container {
+  display: flex;
+  justify-content: flex-start; /* Cambiar de center a flex-start para alinear a la izquierda */
+  margin-bottom: 20px;
+}
+
+/* Opcional: Ajustar el espaciado si es necesario */
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background-color: #f0f9ff;
+  border: 2px dashed #3b82f6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.file-upload-label:hover {
+  background-color: #e0f2fe;
+}
+
+.file-icon {
+  width: 20px;
+  height: 20px; /* Asegurar el tamaño adecuado */
+}
+.progress-bar-container {
+  margin-top: 20px;
+  width: 100%;
+}

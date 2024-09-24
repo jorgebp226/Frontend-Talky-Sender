@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './GroupSelectorPage.css';
 import * as XLSX from 'xlsx';
@@ -17,6 +17,7 @@ function GroupSelectorPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);  // Barra de progreso
   const [timeLeft, setTimeLeft] = useState(0);  // Tiempo restante estimado
+  const intervalRef = useRef(null); // Referencia para el intervalo
 
   // Obtener los grupos desde la API cuando se monta el componente
   useEffect(() => {
@@ -144,13 +145,13 @@ function GroupSelectorPage() {
   // Barra de progreso dinámica
   const startProgressBar = (totalTime) => {
     const startTime = Date.now();
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       const elapsedTime = (Date.now() - startTime) / 1000; // segundos
-      const percentage = (elapsedTime / totalTime) * 100;
+      const percentage = Math.min((elapsedTime / totalTime) * 100, 100); // Limitar al 100%
       setProgress(percentage);
       setTimeLeft((totalTime - elapsedTime) / 60);  // minutos restantes
       if (percentage >= 100) {
-        clearInterval(interval);
+        clearInterval(intervalRef.current);
         window.location.href = '/resumen-groups'; // Redirigir cuando termina
       }
     }, 1000);
@@ -163,10 +164,17 @@ function GroupSelectorPage() {
       alert('Por favor completa todos los campos.');
       return;
     }
-    const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
+    const userAttributesStr = localStorage.getItem('userAttributes');
+    if (!userAttributesStr) {
+      console.error('User attributes not found in localStorage');
+      alert('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
+      return;
+    }
+    const userAttributes = JSON.parse(userAttributesStr);
     const userId = userAttributes?.sub;
     if (!userId) {
       console.error('User ID not found in localStorage');
+      alert('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
       return;
     }
     const groupIds = selectedGroups.map(group => group.id);
@@ -177,7 +185,9 @@ function GroupSelectorPage() {
     };
     try {
       setIsProcessing(true);
-      const totalTime = phoneNumbers.length * 8;  // Tiempo estimado en segundos
+      const totalTime = selectedGroups.length * phoneNumbers.length * 8;  // Tiempo estimado en segundos
+      setTimeLeft(totalTime / 60); // Inicializar tiempo restante en minutos
+      setProgress(0); // Reiniciar progreso
       startProgressBar(totalTime);
       const response = await axios.post(
         'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos',
@@ -189,6 +199,9 @@ function GroupSelectorPage() {
         setFile(null);
         setPhoneColumn('');
         setPhoneNumbers([]);
+        setPreviewData([]);
+        setProgress(0);
+        setTimeLeft(0);
       } else {
         alert('Ocurrió un error al añadir los usuarios.');
       }
@@ -197,12 +210,18 @@ function GroupSelectorPage() {
       alert('Ocurrió un error al añadir los usuarios.');
     } finally {
       setIsProcessing(false);
+      clearInterval(intervalRef.current); // Asegurar que el intervalo se limpie
     }
   };
 
+  // Limpiar el intervalo al desmontar el componente
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
   return (
     <div className="group-selector-container">
-      <h2 style={{ textAlign: 'left' }}>Selecciona los Grupos de WhatsApp</h2>
+      <h2>Selecciona los Grupos de WhatsApp</h2>
       <div className="dropdown-container">
         <input
           type="text"
@@ -237,10 +256,10 @@ function GroupSelectorPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="upload-form">
-        <h3 style={{ textAlign: 'left' }}>Añade los contactos</h3>
-        <div className="file-upload-container">
+        <h3>Añade los contactos</h3>
+        <div className="file-upload-container"> {/* Alineación a la izquierda */}
           <label htmlFor="fileInput" className="file-upload-label">
-            <img src={excelIcon} alt="Excel Icon" className="file-icon" style={{ width: '20px', height: '20px' }} />
+            <img src={excelIcon} alt="Excel Icon" className="file-icon" />
             <span>Elegir archivo CSV o XLSX</span>
           </label>
           <input
@@ -302,7 +321,11 @@ function GroupSelectorPage() {
           {isProcessing ? 'Procesando...' : 'Añadir miembros'}
         </button>
 
-        {isProcessing && <ProgressBar percentage={progress} timeLeft={timeLeft} />}
+        {isProcessing && (
+          <div className="progress-bar-container">
+            <ProgressBar percentage={progress} timeLeft={timeLeft} />
+          </div>
+        )}
       </form>
     </div>
   );

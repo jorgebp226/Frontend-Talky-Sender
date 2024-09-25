@@ -71,7 +71,7 @@ const CheckoutPage = () => {
             stripeScript.src = 'https://js.stripe.com/v3/';
             stripeScript.async = true;
             stripeScript.onload = async () => {
-              const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w');
+              const stripe = window.Stripe('pk_live_51PgiHgCNobZETuuSBoIXJUn8Mm93DcU4s4wFyoe4snCuNgJnxlFvxpkANa0ErQqQbdW714UQiCzCJzbAMdoLrR7V00zbVckZow');
               const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
               if (error) {
                 throw new Error('Error redirecting to Stripe checkout: ' + error.message);

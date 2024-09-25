@@ -19,7 +19,7 @@ const plans = {
         'Envío de mensajes personalizados sin imágenes',
         'Soporte por correo electrónico'
       ],
-      priceId: 'price_1PgiSCCNobZETuuSNjMZMCso',
+      priceId: 'price_1Pl7ICCNobZETuuSkogOJhfj',
     },
     {
       name: 'Estándar',
@@ -33,7 +33,7 @@ const plans = {
         'Envío de mensajes personalizados con imágenes',
         'Soporte por correo electrónico y chat en vivo',
       ],
-      priceId: 'price_1PgiSZCNobZETuuSXxbq64wW',
+      priceId: 'price_1Pl7HhCNobZETuuSU2R71M0i',
       popular: true,
     },
     {
@@ -49,14 +49,14 @@ const plans = {
         'Soporte prioritario 24/7',
         'Informes avanzados con analítica detallada',
       ],
-      priceId: 'price_1PgiT7CNobZETuuSU4WZXITt',
+      priceId: 'price_1Pl7H8CNobZETuuSh8M73qD5',
     },
     {
       name: 'Custom', // Nueva opción Custom
       price: 'Variable',
       period: '',
       features: ['Este plan requiere un código personalizado para activar'],
-      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq', // Este es el price_id que se guardará
+      priceId: 'price_1Q2q6dCNobZETuuSkqYK0Se0', // Este es el price_id que se guardará
     },
   ],
   yearly: [
@@ -71,7 +71,7 @@ const plans = {
         'Soporte por correo electrónico',
         'Informes básicos de entrega y lectura'
       ],
-      priceId: 'price_1PgiV3CNobZETuuSjYl75c62',
+      priceId: 'price_1Pl7EkCNobZETuuSqKuEep2Q',
     },
     {
       name: 'Estándar',
@@ -85,7 +85,7 @@ const plans = {
         'Informes avanzados de entrega y lectura',
         'Integración con CRM'
       ],
-      priceId: 'price_1PgiUSCNobZETuuSidBlmy2J',
+      priceId: 'price_1Pl7G0CNobZETuuSTW40UOws',
       popular: true,
     },
     {
@@ -101,14 +101,14 @@ const plans = {
         'Integración con CRM y herramientas de marketing',
         'Automatización de campañas'
       ],
-      priceId: 'price_1PgiTtCNobZETuuSMIuumhXr',
+      priceId: 'price_1Pl7GZCNobZETuuSySWpNTlt',
     },
     {
       name: 'Custom', // Nueva opción Custom
       price: 'Variable',
       period: '',
       features: ['Este plan requiere un código personalizado para activar'],
-      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq', // Este es el price_id que se guardará
+      priceId: 'price_1Q2q6dCNobZETuuSkqYK0Se0', // Este es el price_id que se guardará
     },
   ],
 };

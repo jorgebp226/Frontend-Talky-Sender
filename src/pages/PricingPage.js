@@ -126,12 +126,12 @@ const PricingPage = () => {
       // Guardar el price_id específico para Custom
       localStorage.setItem('selectedPriceId', plan.priceId);
       localStorage.setItem('selectedPlanName', plan.name); // Aquí ya se guarda correctamente el nombre del plan
-      localStorage.setItem('selectedBillingCycle', billingCycle); // Asegúrate de que 'billingCycle' no afecta a Custom
+      localStorage.removeItem('selectedBillingCycle'); // Eliminar el ciclo de facturación para evitar conflictos
       navigate('/enter-code'); // Redirigir a la página de código
-    }else {
+    } else {
       localStorage.setItem('selectedPriceId', plan.priceId);
       localStorage.setItem('selectedPlanName', plan.name);
-      localStorage.setItem('selectedBillingCycle', billingCycle);
+      localStorage.setItem('selectedBillingCycle', billingCycle); // Guardar solo para planes que no sean Custom
       navigate('/register');
     }
   };

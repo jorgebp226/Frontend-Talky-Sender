@@ -32,7 +32,7 @@ const CheckoutPage = () => {
         const userId = userAttributes.sub;
         const selectedPriceId = localStorage.getItem('selectedPriceId');
         const selectedPlanName = localStorage.getItem('selectedPlanName');
-        const selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
+        let selectedBillingCycle = localStorage.getItem('selectedBillingCycle'); // Puede ser nulo para Custom
 
         console.log('selectedPriceId:', selectedPriceId);
         console.log('selectedPlanName:', selectedPlanName);
@@ -41,8 +41,9 @@ const CheckoutPage = () => {
         // Verificar si el plan es "Custom"
         let selectedPlan;
         if (selectedPlanName === 'Custom') {
-          // El plan "Custom" no tiene ciclo de facturación, lo obtenemos directamente
+          // El plan "Custom" no tiene ciclo de facturación, lo obtenemos directamente sin usar billingCycle
           selectedPlan = plans.monthly.find(plan => plan.name === 'Custom');
+          selectedBillingCycle = null; // Evitar el uso de ciclo de facturación para Custom
         } else {
           // Buscar el plan basado en selectedPriceId y selectedBillingCycle
           selectedPlan = plans[selectedBillingCycle]?.find(plan => plan.priceId === selectedPriceId);
@@ -65,7 +66,8 @@ const CheckoutPage = () => {
           },
           body: JSON.stringify({
             user_id: userId,
-            price_id: selectedPriceId
+            price_id: selectedPriceId,
+            billing_cycle: selectedBillingCycle || null // Solo envía el ciclo si es relevante
           })
         });
 

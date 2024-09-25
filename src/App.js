@@ -13,6 +13,7 @@ import ResumenGrupos from'./pages/Resumen_grupos';
 import Profile from './pages/Profile';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import EnterCodePage from './pages/EnterCodePage';
 import NotFound from './pages/NotFound';
 import SignOutPage from './pages/SignOutPage';
 import SurveyStep1 from './components/Survey/SurveyStep1';
@@ -60,6 +61,7 @@ function AppContent() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/chekout" element={<CheckoutPage />} />
           <Route path="/success" element={<SuccessPage />} />
+          <Route path="/enter-code" element={<EnterCodePage />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/survey/step1" element={<RequireAuth><SurveyStep1 /></RequireAuth>} />

@@ -8,16 +8,16 @@ const CheckoutPage = () => {
   useEffect(() => {
     const redirectToStripeCheckout = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // Log para verificar el contenido de localStorage
-        console.log('localStorage.getItem("userAttributes"):', localStorage.getItem('userAttributes'));
-        
-        const userAttributesStr = localStorage.getItem('userAttributes');
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Simulamos un pequeño delay de 3 segundos para UX
 
-        if (!userAttributesStr) {
-          console.error('User attributes not found in local storage');
-          navigate('/pricing');
+        // Obtener los datos del usuario, el price_id y el cupón del localStorage
+        const userAttributesStr = localStorage.getItem('userAttributes');
+        const selectedPriceId = localStorage.getItem('selectedPriceId');
+        const couponCode = localStorage.getItem('couponCode'); // Obtenemos el código de cupón si existe
+
+        if (!userAttributesStr || !selectedPriceId) {
+          console.error('User attributes or price_id missing');
+          navigate('/pricing'); // Redirigir a la página de precios si no hay datos suficientes
           return;
         }
 
@@ -25,56 +25,29 @@ const CheckoutPage = () => {
         try {
           userAttributes = JSON.parse(userAttributesStr);
         } catch (error) {
-          console.error('Failed to parse user attributes from local storage:', error);
-          navigate('/pricing');
-          return;
-        }
-
-        if (!userAttributes) {
-          console.error('Parsed user attributes are null');
+          console.error('Failed to parse user attributes:', error);
           navigate('/pricing');
           return;
         }
 
         const userId = userAttributes.sub;
-        
-        // Log para verificar userId
+
+        // Log para verificar datos antes de crear la sesión de Stripe
         console.log('userId:', userId);
-        
-        const selectedPriceId = localStorage.getItem('selectedPriceId');
-        const selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
-
-        // Logs para verificar selectedPriceId y selectedBillingCycle
         console.log('selectedPriceId:', selectedPriceId);
-        console.log('selectedBillingCycle:', selectedBillingCycle);
+        console.log('couponCode:', couponCode);
 
-        if (!userId || !selectedPriceId || !selectedBillingCycle) {
-          console.error('Missing required information for checkout');
-          navigate('/pricing');
-          return;
-        }
-
-        const selectedPlan = plans[selectedBillingCycle].find(plan => plan.priceId === selectedPriceId);
-
-        if (!selectedPlan) {
-          console.error('Selected plan not found');
-          navigate('/pricing');
-          return;
-        }
-
-        console.log('Creating session with price_id:', selectedPriceId); // Log del price_id
-        console.log('Creating session with userID:', userId); // Log del userId
-
-        // Crear una sesión de checkout en Stripe a través de tu backend
+        // Crear una sesión de checkout en Stripe llamando a la API del backend
         const response = await fetch('https://tkzarlqsh9.execute-api.eu-west-3.amazonaws.com/dev/stripeapi/create-checkout-session', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             user_id: userId,
-            price_id: selectedPriceId
-          })
+            price_id: selectedPriceId,
+            coupon_id: couponCode || null, // Si hay un cupón lo enviamos, si no, enviamos null
+          }),
         });
 
         if (!response.ok) {
@@ -84,8 +57,8 @@ const CheckoutPage = () => {
         const session = await response.json();
 
         if (session.id) {
-          // Redirigir a la página de pago de Stripe en una nueva ventana
-          const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w'); // Asegúrate de usar tu clave pública de Stripe
+          // Redirigir al usuario a la página de pago de Stripe en una nueva ventana
+          const stripe = window.Stripe('tu_clave_publica_de_stripe'); // Reemplaza por tu clave pública de Stripe
           const { error } = await stripe.redirectToCheckout({
             sessionId: session.id
           });
@@ -95,11 +68,11 @@ const CheckoutPage = () => {
             navigate('/pricing');
           }
         } else {
-          console.error('Error creating Stripe checkout session');
+          console.error('Error: session.id not found');
           navigate('/pricing');
         }
       } catch (error) {
-        console.error('Error redirecting to Stripe checkout:', error);
+        console.error('Error during checkout:', error);
         navigate('/pricing');
       }
     };

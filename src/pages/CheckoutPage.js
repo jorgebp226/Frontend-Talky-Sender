@@ -1,7 +1,5 @@
-// src/pages/CheckoutPage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/plans'; 
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -31,6 +29,12 @@ const CheckoutPage = () => {
         const coupon = localStorage.getItem('couponCode');
         let selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
 
+        // Verificar valores
+        console.log('selectedPlanName:', selectedPlanName);
+        console.log('selectedPriceId:', selectedPriceId);
+        console.log('selectedBillingCycle:', selectedBillingCycle);
+        console.log('coupon:', coupon);
+
         // Determina si es un pago único o una suscripción
         const isOneTimePayment = selectedPlanName === 'Custom';
 
@@ -42,6 +46,9 @@ const CheckoutPage = () => {
           ...(isOneTimePayment ? {} : { billing_cycle: selectedBillingCycle || null }),
           ...(coupon ? { coupon: coupon } : {})
         };
+
+        // Mostrar el cuerpo de la solicitud para depuración
+        console.log('Request Body:', requestBody);
 
         const response = await fetch('https://tkzarlqsh9.execute-api.eu-west-3.amazonaws.com/dev/stripeapi/create-checkout-session', {
           method: 'POST',

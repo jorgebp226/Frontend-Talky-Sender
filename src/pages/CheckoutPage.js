@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/pricing';
+import { plans } from '../components/pricing'; // Asegúrate de que la ruta de importación sea correcta
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -36,14 +36,10 @@ const CheckoutPage = () => {
         console.log('selectedPriceId:', selectedPriceId);
         console.log('selectedBillingCycle:', selectedBillingCycle);
 
-        if (!userId || !selectedPriceId || !selectedBillingCycle) {
-          console.error('Missing required information for checkout');
-          navigate('/pricing');
-          return;
-        }
+        // Buscar el plan basado en selectedPriceId y selectedBillingCycle
+        const selectedPlan = plans[selectedBillingCycle]?.find(plan => plan.priceId === selectedPriceId);
 
-        const selectedPlan = plans[selectedBillingCycle].find(plan => plan.priceId === selectedPriceId);
-
+        // Si el plan no se encuentra, manejar el error
         if (!selectedPlan) {
           console.error('Selected plan not found');
           navigate('/pricing');

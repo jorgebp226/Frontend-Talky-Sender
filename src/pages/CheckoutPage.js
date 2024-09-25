@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/pricing'; // Asegúrate de que la ruta de importación sea correcta
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -31,11 +30,6 @@ const CheckoutPage = () => {
         }
 
         const userId = userAttributes.sub;
-
-        // Log para verificar datos antes de crear la sesión de Stripe
-        console.log('userId:', userId);
-        console.log('selectedPriceId:', selectedPriceId);
-        console.log('couponCode:', couponCode);
 
         // Crear una sesión de checkout en Stripe llamando a la API del backend
         const response = await fetch('https://tkzarlqsh9.execute-api.eu-west-3.amazonaws.com/dev/stripeapi/create-checkout-session', {

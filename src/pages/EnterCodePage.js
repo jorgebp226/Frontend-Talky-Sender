@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './EnterCodePage.css'; // Crea este archivo para manejar el estilo personalizado
 
 const EnterCodePage = () => {
   const [code, setCode] = useState('');
@@ -8,22 +9,28 @@ const EnterCodePage = () => {
   const handleCodeSubmit = () => {
     if (code.trim()) {
       localStorage.setItem('couponCode', code); // Guardamos el código en localStorage
-      navigate('/checkout'); // Redirigir a la página de pago
+      navigate('/register'); // Redirigir a la página de registro
     } else {
       alert('Por favor, introduce un código válido.');
     }
   };
 
   return (
-    <div>
-      <h1>Introduce tu código personalizado</h1>
-      <input
-        type="text"
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        placeholder="Ingresa tu código"
-      />
-      <button onClick={handleCodeSubmit}>Enviar</button>
+    <div className="enter-code-page">
+      <div className="code-container">
+        <h1>Introduce tu código personalizado</h1>
+        <p>Por favor, introduce el código proporcionado para activar tu plan personalizado.</p>
+        <div className="input-container">
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Ingresa tu código"
+            className="code-input"
+          />
+        </div>
+        <button onClick={handleCodeSubmit} className="submit-btn">Enviar</button>
+      </div>
     </div>
   );
 };

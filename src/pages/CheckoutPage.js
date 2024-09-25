@@ -52,7 +52,7 @@ const CheckoutPage = () => {
 
         if (session.id) {
           // Redirigir al usuario a la página de pago de Stripe en una nueva ventana
-          const stripe = window.Stripe('tu_clave_publica_de_stripe'); // Reemplaza por tu clave pública de Stripe
+          const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w'); // Reemplaza por tu clave pública de Stripe
           const { error } = await stripe.redirectToCheckout({
             sessionId: session.id
           });

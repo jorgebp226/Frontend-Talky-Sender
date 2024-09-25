@@ -1,6 +1,7 @@
+// src/pages/CheckoutPage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/plans'; // Asegúrate de que la ruta de importación sea correcta
+import { plans } from '../components/plans'; 
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -10,8 +11,6 @@ const CheckoutPage = () => {
     const redirectToStripeCheckout = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 3000));
-
-        console.log('localStorage.getItem("userAttributes"):', localStorage.getItem('userAttributes'));
 
         const userAttributesStr = localStorage.getItem('userAttributes');
 
@@ -32,26 +31,17 @@ const CheckoutPage = () => {
         const coupon = localStorage.getItem('couponCode');
         let selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
 
-        console.log('selectedPriceId:', selectedPriceId);
-        console.log('selectedPlanName:', selectedPlanName);
-        console.log('selectedBillingCycle:', selectedBillingCycle);
-        console.log('coupon:', coupon);
-
-        // Determine if it's a one-time payment or a subscription
+        // Determina si es un pago único o una suscripción
         const isOneTimePayment = selectedPlanName === 'Custom';
 
-        // Prepare the request body
+        // Prepara el cuerpo de la solicitud
         const requestBody = {
           user_id: userId,
           price_id: selectedPriceId,
           mode: isOneTimePayment ? 'payment' : 'subscription',
-          // Only include billing_cycle for subscriptions
           ...(isOneTimePayment ? {} : { billing_cycle: selectedBillingCycle || null }),
-          // Include coupon if it exists
           ...(coupon ? { coupon: coupon } : {})
         };
-
-        console.log('Creating session with:', requestBody);
 
         const response = await fetch('https://tkzarlqsh9.execute-api.eu-west-3.amazonaws.com/dev/stripeapi/create-checkout-session', {
           method: 'POST',
@@ -72,11 +62,8 @@ const CheckoutPage = () => {
           if (!window.Stripe) {
             throw new Error('Stripe.js not loaded');
           }
-          const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w'); 
-          
-          const { error } = await stripe.redirectToCheckout({
-            sessionId: session.id
-          });
+          const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w');
+          const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
 
           if (error) {
             throw new Error('Error redirecting to Stripe checkout: ' + error.message);
@@ -85,7 +72,6 @@ const CheckoutPage = () => {
           throw new Error('Error creating Stripe checkout session: Session ID not received');
         }
       } catch (error) {
-        console.error('Error in checkout process:', error);
         setError(error.message);
       }
     };

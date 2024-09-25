@@ -9,9 +9,9 @@ const CheckoutPage = () => {
     const redirectToStripeCheckout = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
+
         console.log('localStorage.getItem("userAttributes"):', localStorage.getItem('userAttributes'));
-        
+
         const userAttributesStr = localStorage.getItem('userAttributes');
 
         if (!userAttributesStr) {
@@ -31,13 +31,22 @@ const CheckoutPage = () => {
 
         const userId = userAttributes.sub;
         const selectedPriceId = localStorage.getItem('selectedPriceId');
+        const selectedPlanName = localStorage.getItem('selectedPlanName');
         const selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
 
         console.log('selectedPriceId:', selectedPriceId);
+        console.log('selectedPlanName:', selectedPlanName);
         console.log('selectedBillingCycle:', selectedBillingCycle);
 
-        // Buscar el plan basado en selectedPriceId y selectedBillingCycle
-        const selectedPlan = plans[selectedBillingCycle]?.find(plan => plan.priceId === selectedPriceId);
+        // Verificar si el plan es "Custom"
+        let selectedPlan;
+        if (selectedPlanName === 'Custom') {
+          // El plan "Custom" no tiene ciclo de facturación, lo obtenemos directamente
+          selectedPlan = plans.monthly.find(plan => plan.name === 'Custom');
+        } else {
+          // Buscar el plan basado en selectedPriceId y selectedBillingCycle
+          selectedPlan = plans[selectedBillingCycle]?.find(plan => plan.priceId === selectedPriceId);
+        }
 
         // Si el plan no se encuentra, manejar el error
         if (!selectedPlan) {

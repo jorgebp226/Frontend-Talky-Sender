@@ -25,6 +25,7 @@ import { I18n } from '@aws-amplify/core';
 import PricingPage from './pages/PricingPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SuccessPage from './pages/SuccessPage';
+import GroupMessageSender from './pages/GroupMessageSender';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import axios from 'axios';
@@ -76,6 +77,8 @@ function AppContent() {
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/resumen" element={<RequireAuth><ResumenEnvio /></RequireAuth>} />
           <Route path="/resumen-groups" element={<RequireAuth><ResumenGrupos /></RequireAuth>} />
+          <Route path="/group-message-sender" element={<RequireAuth><GroupMessageSender /></RequireAuth>} />
+
           {/* Agrega la nueva ruta para GroupSelectorPage */}
           <Route path="/group-selector" element={<RequireAuth><GroupSelectorPage /></RequireAuth>} />
         </Routes>

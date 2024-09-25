@@ -66,14 +66,26 @@ const CheckoutPage = () => {
         const session = await response.json();
 
         if (session.id) {
+          // Asegurarse de que Stripe.js esté cargado
           if (!window.Stripe) {
-            throw new Error('Stripe.js not loaded');
-          }
-          const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w');
-          const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
+            const stripeScript = document.createElement('script');
+            stripeScript.src = 'https://js.stripe.com/v3/';
+            stripeScript.async = true;
+            stripeScript.onload = async () => {
+              const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w');
+              const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
+              if (error) {
+                throw new Error('Error redirecting to Stripe checkout: ' + error.message);
+              }
+            };
+            document.body.appendChild(stripeScript);
+          } else {
+            const stripe = window.Stripe('pk_test_51PgiHgCNobZETuuSYPVgYF897M954AejyqzEeQarLNmjlj3fYXZZ5GTKH0xxyzxduvGcbDbpZHOaH0aYHZ25aS7C00B4Dmei9w');
+            const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
 
-          if (error) {
-            throw new Error('Error redirecting to Stripe checkout: ' + error.message);
+            if (error) {
+              throw new Error('Error redirecting to Stripe checkout: ' + error.message);
+            }
           }
         } else {
           throw new Error('Error creating Stripe checkout session: Session ID not received');

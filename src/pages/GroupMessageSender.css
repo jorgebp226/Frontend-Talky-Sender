@@ -1,0 +1,36 @@
+.group-message-sender {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .group-selector {
+    margin-top: 20px;
+  }
+  
+  .group-selector input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .group-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .group-item {
+    padding: 10px;
+    background-color: #f0f0f0;
+    margin-bottom: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .group-item.selected {
+    background-color: #3b82f6;
+    color: white;
+  }
+  

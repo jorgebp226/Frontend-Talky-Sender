@@ -5,7 +5,6 @@ import Header from '../components/Header2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
-// Definición de los planes con la nueva opción Custom y los precios originales
 const plans = {
   monthly: [
     {
@@ -53,11 +52,11 @@ const plans = {
       priceId: 'price_1PgiT7CNobZETuuSU4WZXITt',
     },
     {
-      name: 'Custom', // Nueva tarjeta para el plan Custom
+      name: 'Custom', // Nueva opción Custom
       price: 'Variable',
       period: '',
       features: ['Este plan requiere un código personalizado para activar'],
-      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq', // No hay priceId ya que el precio es personalizado
+      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq', // Este es el price_id que se guardará
     },
   ],
   yearly: [
@@ -105,11 +104,11 @@ const plans = {
       priceId: 'price_1PgiTtCNobZETuuSMIuumhXr',
     },
     {
-      name: 'Custom', // Nueva tarjeta para el plan Custom
+      name: 'Custom', // Nueva opción Custom
       price: 'Variable',
       period: '',
       features: ['Este plan requiere un código personalizado para activar'],
-      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq',
+      priceId: 'price_1Q2pcICNobZETuuSUp9cqppq', // Este es el price_id que se guardará
     },
   ],
 };
@@ -124,14 +123,16 @@ const PricingPage = () => {
 
   const handlePlanSelection = (plan) => {
     if (plan.name === 'Custom') {
-      // Redirigir a la página para ingresar el código
-      navigate('/enter-code');
-    } else {
-      // Guardar en localStorage los detalles del plan seleccionado
+      // Guardar el price_id específico para Custom
       localStorage.setItem('selectedPriceId', plan.priceId);
       localStorage.setItem('selectedPlanName', plan.name);
       localStorage.setItem('selectedBillingCycle', billingCycle);
-      navigate('/register'); // Redirigir a la página de registro
+      navigate('/enter-code'); // Redirigir a la página de código
+    } else {
+      localStorage.setItem('selectedPriceId', plan.priceId);
+      localStorage.setItem('selectedPlanName', plan.name);
+      localStorage.setItem('selectedBillingCycle', billingCycle);
+      navigate('/register');
     }
   };
 

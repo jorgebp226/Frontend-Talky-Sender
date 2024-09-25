@@ -35,7 +35,6 @@ const CheckoutPage = () => {
         console.log('selectedBillingCycle:', selectedBillingCycle);
         console.log('coupon:', coupon);
 
-        // Determina si es un pago único o una suscripción
         const isOneTimePayment = selectedPlanName === 'Custom';
 
         // Prepara el cuerpo de la solicitud
@@ -44,9 +43,9 @@ const CheckoutPage = () => {
           price_id: selectedPriceId,
           mode: isOneTimePayment ? 'payment' : 'subscription',
           ...(isOneTimePayment ? {} : { billing_cycle: selectedBillingCycle || null }),
-          ...(coupon ? { coupon: coupon } : {})
+          ...(coupon ? { coupon_id: coupon } : {}) // Aquí asegúrate de enviar el cupón como "coupon_id"
         };
-
+        
         // Mostrar el cuerpo de la solicitud para depuración
         console.log('Request Body:', requestBody);
 

@@ -325,10 +325,10 @@ function GroupSelectorPage() {
         </button>
 
         {isProcessing && (
-          <div className="progress-bar-container">
-            <ProgressBar percentage={progress} timeLeft={timeLeft} />
-          </div>
-        )}
+        <div className="progress-bar-container">
+          <ProgressBar percentage={progress} timeLeft={timeLeft} showPauseButton={false} />
+        </div>
+      )}
       </form>
     </div>
   );

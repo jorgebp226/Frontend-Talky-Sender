@@ -75,7 +75,8 @@ const PauseButtonStyled = styled.button`
   }
 `;
 
-const ProgressBar = ({ percentage, onPauseClick, isPaused, timeLeft, isResuming }) => {
+// ProgressBar.js
+const ProgressBar = ({ percentage, onPauseClick, isPaused, timeLeft, isResuming, showPauseButton = true }) => {
   return (
     <>
       <ProgressBarWrapper>
@@ -83,9 +84,11 @@ const ProgressBar = ({ percentage, onPauseClick, isPaused, timeLeft, isResuming 
         <ProgressBarContainer>
           <ProgressBarFill percentage={percentage} />
         </ProgressBarContainer>
-        <PauseButtonStyled onClick={onPauseClick} isPaused={isPaused} disabled={isResuming}>
-          {isResuming ? 'Reanudando...' : (isPaused ? 'Reanudar Envío' : 'Pausar Envío')}
-        </PauseButtonStyled>
+        {showPauseButton && (
+          <PauseButtonStyled onClick={onPauseClick} isPaused={isPaused} disabled={isResuming}>
+            {isResuming ? 'Reanudando...' : (isPaused ? 'Reanudar Envío' : 'Pausar Envío')}
+          </PauseButtonStyled>
+        )}
       </ProgressBarWrapper>
       <TimeLeftText>Tiempo pendiente estimado: {timeLeft.toFixed(0)} minutos</TimeLeftText>
     </>

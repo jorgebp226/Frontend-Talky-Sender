@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/pricing'; // Asegúrate de que la ruta de importación sea correcta
+import { plans } from '../components/plans'; // Asegúrate de que la ruta de importación sea correcta
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -29,11 +29,13 @@ const CheckoutPage = () => {
         const userId = userAttributes.sub;
         const selectedPriceId = localStorage.getItem('selectedPriceId');
         const selectedPlanName = localStorage.getItem('selectedPlanName');
+        const coupon = localStorage.getItem('couponCode');
         let selectedBillingCycle = localStorage.getItem('selectedBillingCycle');
 
         console.log('selectedPriceId:', selectedPriceId);
         console.log('selectedPlanName:', selectedPlanName);
         console.log('selectedBillingCycle:', selectedBillingCycle);
+        console.log('coupon:', coupon);
 
         // Determine if it's a one-time payment or a subscription
         const isOneTimePayment = selectedPlanName === 'Custom';
@@ -44,7 +46,9 @@ const CheckoutPage = () => {
           price_id: selectedPriceId,
           mode: isOneTimePayment ? 'payment' : 'subscription',
           // Only include billing_cycle for subscriptions
-          ...(isOneTimePayment ? {} : { billing_cycle: selectedBillingCycle || null })
+          ...(isOneTimePayment ? {} : { billing_cycle: selectedBillingCycle || null }),
+          // Include coupon if it exists
+          ...(coupon ? { coupon: coupon } : {})
         };
 
         console.log('Creating session with:', requestBody);

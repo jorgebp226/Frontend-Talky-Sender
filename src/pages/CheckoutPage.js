@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { plans } from '../components/pricing'; // Asegúrate de que la ruta de importación sea correcta
+import { plans } from '../components/pricing'; // Make sure the import path is correct
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -32,24 +32,27 @@ const CheckoutPage = () => {
         const userId = userAttributes.sub;
         const selectedPriceId = localStorage.getItem('selectedPriceId');
         const selectedPlanName = localStorage.getItem('selectedPlanName');
-        let selectedBillingCycle = localStorage.getItem('selectedBillingCycle'); // Puede ser nulo para Custom
+        let selectedBillingCycle = localStorage.getItem('selectedBillingCycle'); // Can be null for Custom
 
         console.log('selectedPriceId:', selectedPriceId);
         console.log('selectedPlanName:', selectedPlanName);
         console.log('selectedBillingCycle:', selectedBillingCycle);
 
-        // Verificar si el plan es "Custom"
+        // Find the selected plan
         let selectedPlan;
         if (selectedPlanName === 'Custom') {
-          // El plan "Custom" no tiene ciclo de facturación, lo obtenemos directamente sin usar billingCycle
-          selectedPlan = plans.monthly.find(plan => plan.name === 'Custom');
-          selectedBillingCycle = null; // Evitar el uso de ciclo de facturación para Custom
+          // For Custom plan, we create a simple object with the necessary information
+          selectedPlan = {
+            name: 'Custom',
+            priceId: selectedPriceId
+          };
         } else {
-          // Buscar el plan basado en selectedPriceId y selectedBillingCycle
-          selectedPlan = plans[selectedBillingCycle]?.find(plan => plan.priceId === selectedPriceId);
+          // For other plans, we search in both monthly and yearly arrays
+          selectedPlan = plans.monthly.find(plan => plan.priceId === selectedPriceId) ||
+                         plans.yearly.find(plan => plan.priceId === selectedPriceId);
         }
 
-        // Si el plan no se encuentra, manejar el error
+        // If the plan is still not found, handle the error
         if (!selectedPlan) {
           console.error('Selected plan not found');
           navigate('/pricing');
@@ -67,7 +70,7 @@ const CheckoutPage = () => {
           body: JSON.stringify({
             user_id: userId,
             price_id: selectedPriceId,
-            billing_cycle: selectedBillingCycle || null // Solo envía el ciclo si es relevante
+            billing_cycle: selectedBillingCycle || null // Only send the cycle if it's relevant
           })
         });
 

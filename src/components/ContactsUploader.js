@@ -64,6 +64,12 @@ const DownloadLink = styled.a`
 
 const ContactsUploader = ({ setCsvData }) => {
   const [fileName, setFileName] = useState('');
+  const [headers, setHeaders] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [selectedNameColumn, setSelectedNameColumn] = useState(null);
+  const [selectedPhoneColumn, setSelectedPhoneColumn] = useState(null);
+  const [csvLines, setCsvLines] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -95,56 +101,98 @@ const ContactsUploader = ({ setCsvData }) => {
   };
 
   const processCsvData = (csvData) => {
-    // Dividir el CSV en líneas
-    let lines = csvData.split(/\r\n|\n/);
-    
+    // Dividir el CSV en líneas y eliminar líneas vacías
+    let lines = csvData.split(/\r\n|\n/).filter(line => line.trim() !== '');
+
     // Determinar el separador (coma o punto y coma)
     const separator = lines[0].includes(';') ? ';' : ',';
-    
+
     // Convertir el separador a punto y coma si es necesario
     if (separator === ',') {
       lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
     }
-    
-    // Encontrar los índices de las columnas 'Nombre' y 'Teléfono'
-    let headers = lines[0].split(';');
-    let nombreIndex = headers.findIndex(h => h.trim().toLowerCase() === 'nombre');
-    let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono' || h.trim().toLowerCase() === 'telefono');
-    
-    // Si no se encuentran las columnas, buscar alternativas
-    if (nombreIndex === -1) nombreIndex = headers.findIndex(h => h.trim().toLowerCase().includes('nombre'));
-    if (telefonoIndex === -1) telefonoIndex = headers.findIndex(h => h.trim().toLowerCase().includes('telefono') || h.trim().toLowerCase().includes('teléfono'));
-    
-    // Si aún no se encuentran, usar las dos primeras columnas
-    if (nombreIndex === -1) nombreIndex = 0;
-    if (telefonoIndex === -1) telefonoIndex = 1;
-    
-    // Asegurarse de que 'Nombre' y 'Teléfono' estén en las primeras dos columnas
-    if (nombreIndex !== 0 || telefonoIndex !== 1) {
-      lines = lines.map((line, index) => {
-        if (index === 0) {
-          return `Nombre;Teléfono;${headers.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
-        } else {
-          const columns = line.split(';');
-          return `${columns[nombreIndex]};${columns[telefonoIndex]};${columns.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
-        }
-      });
+
+    // Obtener los encabezados
+    let headers = lines[0].split(';').map(h => h.trim());
+
+    // Obtener datos de vista previa (primeras 3 filas)
+    let previewData = lines.slice(1, 4).map(line => line.split(';'));
+
+    // Guardar encabezados y datos de vista previa en el estado
+    setHeaders(headers);
+    setPreviewData(previewData);
+
+    // Guardar las líneas CSV para procesamiento posterior
+    setCsvLines(lines);
+
+    // Reiniciar columnas seleccionadas
+    setSelectedNameColumn(null);
+    setSelectedPhoneColumn(null);
+  };
+
+  const handleProcessData = () => {
+    if (selectedPhoneColumn == null) {
+      alert('Por favor, seleccione la columna de Teléfono.');
+      return;
     }
-    
-    // Unir las líneas de nuevo en un string CSV
-    let newCsv = lines.join('\n');
-    
-    // Limpiar el CSV de posibles caracteres no deseados
-    newCsv = newCsv.replace(/[\r\n]+/g, '\n').trim();
-    
-    setCsvData(newCsv);
+
+    const processedData = [];
+    const separator = ';';
+
+    // Preparar encabezados
+    const newHeaders = ['Nombre', 'Teléfono'];
+
+    processedData.push(newHeaders.join(separator));
+
+    // Procesar cada fila
+    for (let i = 1; i < csvLines.length; i++) {
+      const line = csvLines[i];
+      const cells = line.split(separator);
+
+      let name = '';
+      if (selectedNameColumn != null) {
+        name = cells[selectedNameColumn] || '';
+      }
+
+      let phone = cells[selectedPhoneColumn] || '';
+      phone = phone.replace(/\D/g, ''); // Eliminar caracteres no numéricos
+
+      if (phone.length === 9) {
+        phone = '34' + phone;
+      } else if (phone.length < 9) {
+        continue; // Omitir esta fila
+      }
+      // Si phone.length > 9, no hacer nada
+
+      // Agregar la fila procesada
+      const newRow = [name, phone];
+      processedData.push(newRow.join(separator));
+    }
+
+    // Crear el nuevo CSV
+    const newCsvData = processedData.join('\n');
+
+    // Enviar los datos CSV procesados
+    setCsvData(newCsvData);
+
+    // Limpiar la vista previa y selecciones
+    setHeaders(null);
+    setPreviewData(null);
+    setSelectedNameColumn(null);
+    setSelectedPhoneColumn(null);
+
+    alert('Datos procesados correctamente.');
   };
 
   const handleRemoveFile = () => {
     setCsvData(null);
     setFileName('');
+    setHeaders(null);
+    setPreviewData(null);
+    setSelectedNameColumn(null);
+    setSelectedPhoneColumn(null);
+    setCsvLines([]);
   };
-
 
   return (
     <UploaderWrapper>
@@ -168,6 +216,57 @@ const ContactsUploader = ({ setCsvData }) => {
           <CloseButton onClick={handleRemoveFile}>×</CloseButton>
           <strong>Archivo subido:</strong> {fileName}
         </FilePreview>
+      )}
+
+      {headers && (
+        <div>
+          <h3>Selecciona las columnas:</h3>
+          <div>
+            <label>Columna de Teléfono:</label>
+            <select
+              value={selectedPhoneColumn != null ? selectedPhoneColumn : ''}
+              onChange={(e) => setSelectedPhoneColumn(Number(e.target.value))}
+            >
+              <option value="" disabled>Seleccione</option>
+              {headers.map((header, index) => (
+                <option key={index} value={index}>{header}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label>Columna de Nombre (opcional):</label>
+            <select
+              value={selectedNameColumn != null ? selectedNameColumn : ''}
+              onChange={(e) => setSelectedNameColumn(Number(e.target.value))}
+            >
+              <option value="" disabled>Seleccione</option>
+              {headers.map((header, index) => (
+                <option key={index} value={index}>{header}</option>
+              ))}
+            </select>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                {headers.map((header, index) => (
+                  <th key={index}>{header}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {previewData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex}>{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <button onClick={handleProcessData}>Procesar Datos</button>
+        </div>
       )}
     </UploaderWrapper>
   );

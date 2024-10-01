@@ -99,6 +99,11 @@ const ConfirmButton = styled.button`
   cursor: pointer;
 `;
 
+const ErrorText = styled.p`
+  color: red;
+  margin-top: 10px;
+`;
+
 const ContactsUploader = ({ setCsvData }) => {
   const [fileName, setFileName] = useState('');
   const [headers, setHeaders] = useState([]);
@@ -106,9 +111,11 @@ const ContactsUploader = ({ setCsvData }) => {
   const [selectedNombre, setSelectedNombre] = useState('');
   const [selectedTelefono, setSelectedTelefono] = useState('');
   const [processedData, setProcessedData] = useState(null);
+  const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    setError('');
     if (file) {
       setFileName(file.name);
       if (file.name.endsWith('.xlsx')) {
@@ -119,6 +126,8 @@ const ContactsUploader = ({ setCsvData }) => {
           processCsvData(reader.result);
         };
         reader.readAsText(file);
+      } else {
+        setError('Formato de archivo no soportado.');
       }
     }
   };
@@ -126,60 +135,98 @@ const ContactsUploader = ({ setCsvData }) => {
   const readExcelFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      let csv = XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
-      processCsvData(csv);
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        let csv = XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
+        processCsvData(csv);
+      } catch (err) {
+        console.error('Error al leer el archivo Excel:', err);
+        setError('Error al leer el archivo Excel. Asegúrate de que el archivo no esté dañado.');
+      }
+    };
+    reader.onerror = () => {
+      console.error('Error al leer el archivo:', reader.error);
+      setError('Error al leer el archivo.');
     };
     reader.readAsArrayBuffer(file);
   };
 
   const processCsvData = (csvData) => {
-    // Dividir el CSV en líneas
-    let lines = csvData.split(/\r\n|\n/);
+    try {
+      // Dividir el CSV en líneas
+      let lines = csvData.split(/\r\n|\n/);
 
-    // Determinar el separador (coma o punto y coma)
-    const separator = lines[0].includes(';') ? ';' : ',';
+      // Eliminar líneas vacías
+      lines = lines.filter(line => line.trim() !== '');
 
-    // Convertir el separador a punto y coma si es necesario
-    if (separator === ',') {
-      lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
+      if (lines.length === 0) {
+        setError('El archivo está vacío.');
+        return;
+      }
+
+      // Determinar el separador (coma o punto y coma)
+      const separator = lines[0].includes(';') ? ';' : ',';
+
+      // Convertir el separador a punto y coma si es necesario
+      if (separator === ',') {
+        lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
+      }
+
+      // Obtener los encabezados y las primeras tres filas
+      const allHeaders = lines[0].split(';').map(header => header.trim());
+      const firstThreeRows = lines.slice(1, 4).map(line => line.split(';').map(cell => cell.trim()));
+
+      setHeaders(allHeaders);
+      setPreviewRows(firstThreeRows);
+      setProcessedData(lines); // Guardar todas las líneas para procesamiento posterior
+    } catch (err) {
+      console.error('Error al procesar el CSV:', err);
+      setError('Error al procesar el archivo CSV. Asegúrate de que el formato sea correcto.');
     }
-
-    // Obtener los encabezados y las primeras tres filas
-    const allHeaders = lines[0].split(';');
-    const firstThreeRows = lines.slice(1, 4).map(line => line.split(';'));
-
-    setHeaders(allHeaders);
-    setPreviewRows(firstThreeRows);
-    setProcessedData(lines); // Guardar todas las líneas para procesamiento posterior
   };
 
   const handleConfirmSelection = () => {
     if (!processedData) return;
 
-    const headers = processedData[0].split(';');
+    if (!selectedTelefono) {
+      setError('Por favor, selecciona una columna para Teléfono.');
+      return;
+    }
+
+    const headers = processedData[0].split(';').map(header => header.trim());
     const nombreIdx = selectedNombre ? headers.indexOf(selectedNombre) : -1;
-    const telefonoIdx = selectedTelefono ? headers.indexOf(selectedTelefono) : -1;
+    const telefonoIdx = headers.indexOf(selectedTelefono);
 
     if (telefonoIdx === -1) {
-      alert('Por favor, selecciona la columna de Teléfono.');
+      setError('La columna de Teléfono seleccionada no existe.');
       return;
     }
 
     // Crear nuevas líneas con las columnas seleccionadas
-    let newLines = [ 'Nombre;Teléfono' ]; // Encabezados
+    let newLines = ['Nombre;Teléfono']; // Encabezados
 
     for (let i = 1; i < processedData.length; i++) {
       const line = processedData[i];
       if (!line.trim()) continue; // Saltar líneas vacías
       const columns = line.split(';');
 
-      // Obtener nombre y teléfono
-      const nombre = nombreIdx !== -1 ? columns[nombreIdx].trim() : '';
-      let telefono = telefonoIdx !== -1 ? columns[telefonoIdx].trim() : '';
+      // Obtener nombre y teléfono con seguridad
+      let nombre = '';
+      if (nombreIdx !== -1 && columns.length > nombreIdx) {
+        nombre = columns[nombreIdx].trim();
+        // Asegurarse de que 'nombre' no sea undefined o null
+        if (!nombre) nombre = '';
+      }
+
+      let telefono = '';
+      if (columns.length > telefonoIdx) {
+        telefono = columns[telefonoIdx].trim();
+        // Asegurarse de que 'telefono' no sea undefined o null
+        if (!telefono) telefono = '';
+      }
 
       // Normalizar el teléfono
       const digitsOnly = telefono.replace(/\D/g, '');
@@ -191,15 +238,34 @@ const ContactsUploader = ({ setCsvData }) => {
         continue; // Eliminar la fila si tiene menos de 9 dígitos
       }
 
+      // Verificar que 'telefono' no sea 'NaN'
+      if (telefono.toLowerCase() === 'nan') {
+        continue; // Eliminar la fila si el teléfono es 'NaN'
+      }
+
       // Añadir la nueva línea
       newLines.push(`${nombre};${telefono}`);
+    }
+
+    // Verificar si newLines tiene al menos dos líneas (encabezados + al menos un contacto)
+    if (newLines.length < 2) {
+      setError('No hay contactos válidos para enviar.');
+      return;
     }
 
     // Unir las líneas en un CSV
     const finalCsv = newLines.join('\n');
 
+    // Verificar que el CSV no contenga 'NaN'
+    if (finalCsv.includes('NaN')) {
+      setError('Los datos procesados contienen valores inválidos.');
+      console.error('CSV contiene NaN:', finalCsv);
+      return;
+    }
+
     // Pasar el CSV al componente padre
     setCsvData(finalCsv);
+    setError('');
   };
 
   const handleRemoveFile = () => {
@@ -210,6 +276,7 @@ const ContactsUploader = ({ setCsvData }) => {
     setSelectedNombre('');
     setSelectedTelefono('');
     setProcessedData(null);
+    setError('');
   };
 
   return (
@@ -288,11 +355,16 @@ const ContactsUploader = ({ setCsvData }) => {
             </div>
           </SelectContainer>
 
+          {error && <ErrorText>{error}</ErrorText>}
+
           <ConfirmButton onClick={handleConfirmSelection}>
             Confirmar Selección
           </ConfirmButton>
         </>
       )}
+
+      {/* Mostrar errores generales */}
+      {error && previewRows.length === 0 && <ErrorText>{error}</ErrorText>}
     </UploaderWrapper>
   );
 };

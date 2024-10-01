@@ -62,14 +62,50 @@ const DownloadLink = styled.a`
   cursor: pointer;
 `;
 
+const PreviewTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+`;
+
+const SelectContainer = styled.div`
+  margin-top: 20px;
+  display: flex;
+  gap: 20px;
+`;
+
+const Select = styled.select`
+  padding: 8px;
+  border-radius: 4px;
+`;
+
+const ConfirmButton = styled.button`
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
 const ContactsUploader = ({ setCsvData }) => {
   const [fileName, setFileName] = useState('');
-  const [headers, setHeaders] = useState(null);
-  const [previewData, setPreviewData] = useState(null);
-  const [selectedNameColumn, setSelectedNameColumn] = useState(null);
-  const [selectedPhoneColumn, setSelectedPhoneColumn] = useState(null);
-  const [csvLines, setCsvLines] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [headers, setHeaders] = useState([]);
+  const [previewRows, setPreviewRows] = useState([]);
+  const [selectedNombre, setSelectedNombre] = useState('');
+  const [selectedTelefono, setSelectedTelefono] = useState('');
+  const [processedData, setProcessedData] = useState(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -101,8 +137,8 @@ const ContactsUploader = ({ setCsvData }) => {
   };
 
   const processCsvData = (csvData) => {
-    // Dividir el CSV en líneas y eliminar líneas vacías
-    let lines = csvData.split(/\r\n|\n/).filter(line => line.trim() !== '');
+    // Dividir el CSV en líneas
+    let lines = csvData.split(/\r\n|\n/);
 
     // Determinar el separador (coma o punto y coma)
     const separator = lines[0].includes(';') ? ';' : ',';
@@ -112,86 +148,68 @@ const ContactsUploader = ({ setCsvData }) => {
       lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
     }
 
-    // Obtener los encabezados
-    let headers = lines[0].split(';').map(h => h.trim());
+    // Obtener los encabezados y las primeras tres filas
+    const allHeaders = lines[0].split(';');
+    const firstThreeRows = lines.slice(1, 4).map(line => line.split(';'));
 
-    // Obtener datos de vista previa (primeras 3 filas)
-    let previewData = lines.slice(1, 4).map(line => line.split(';'));
-
-    // Guardar encabezados y datos de vista previa en el estado
-    setHeaders(headers);
-    setPreviewData(previewData);
-
-    // Guardar las líneas CSV para procesamiento posterior
-    setCsvLines(lines);
-
-    // Reiniciar columnas seleccionadas
-    setSelectedNameColumn(null);
-    setSelectedPhoneColumn(null);
+    setHeaders(allHeaders);
+    setPreviewRows(firstThreeRows);
+    setProcessedData(lines); // Guardar todas las líneas para procesamiento posterior
   };
 
-  const handleProcessData = () => {
-    if (selectedPhoneColumn == null) {
-      alert('Por favor, seleccione la columna de Teléfono.');
+  const handleConfirmSelection = () => {
+    if (!processedData) return;
+
+    const headers = processedData[0].split(';');
+    const nombreIdx = selectedNombre ? headers.indexOf(selectedNombre) : -1;
+    const telefonoIdx = selectedTelefono ? headers.indexOf(selectedTelefono) : -1;
+
+    if (telefonoIdx === -1) {
+      alert('Por favor, selecciona la columna de Teléfono.');
       return;
     }
 
-    const processedData = [];
-    const separator = ';';
+    // Crear nuevas líneas con las columnas seleccionadas
+    let newLines = [ 'Nombre;Teléfono' ]; // Encabezados
 
-    // Preparar encabezados
-    const newHeaders = ['Nombre', 'Teléfono'];
+    for (let i = 1; i < processedData.length; i++) {
+      const line = processedData[i];
+      if (!line.trim()) continue; // Saltar líneas vacías
+      const columns = line.split(';');
 
-    processedData.push(newHeaders.join(separator));
+      // Obtener nombre y teléfono
+      const nombre = nombreIdx !== -1 ? columns[nombreIdx].trim() : '';
+      let telefono = telefonoIdx !== -1 ? columns[telefonoIdx].trim() : '';
 
-    // Procesar cada fila
-    for (let i = 1; i < csvLines.length; i++) {
-      const line = csvLines[i];
-      const cells = line.split(separator);
-
-      let name = '';
-      if (selectedNameColumn != null) {
-        name = cells[selectedNameColumn] || '';
+      // Normalizar el teléfono
+      const digitsOnly = telefono.replace(/\D/g, '');
+      if (digitsOnly.length === 9) {
+        telefono = '34' + digitsOnly;
+      } else if (digitsOnly.length > 9) {
+        telefono = digitsOnly;
+      } else {
+        continue; // Eliminar la fila si tiene menos de 9 dígitos
       }
 
-      let phone = cells[selectedPhoneColumn] || '';
-      phone = phone.replace(/\D/g, ''); // Eliminar caracteres no numéricos
-
-      if (phone.length === 9) {
-        phone = '34' + phone;
-      } else if (phone.length < 9) {
-        continue; // Omitir esta fila
-      }
-      // Si phone.length > 9, no hacer nada
-
-      // Agregar la fila procesada
-      const newRow = [name, phone];
-      processedData.push(newRow.join(separator));
+      // Añadir la nueva línea
+      newLines.push(`${nombre};${telefono}`);
     }
 
-    // Crear el nuevo CSV
-    const newCsvData = processedData.join('\n');
+    // Unir las líneas en un CSV
+    const finalCsv = newLines.join('\n');
 
-    // Enviar los datos CSV procesados
-    setCsvData(newCsvData);
-
-    // Limpiar la vista previa y selecciones
-    setHeaders(null);
-    setPreviewData(null);
-    setSelectedNameColumn(null);
-    setSelectedPhoneColumn(null);
-
-    alert('Datos procesados correctamente.');
+    // Pasar el CSV al componente padre
+    setCsvData(finalCsv);
   };
 
   const handleRemoveFile = () => {
     setCsvData(null);
     setFileName('');
-    setHeaders(null);
-    setPreviewData(null);
-    setSelectedNameColumn(null);
-    setSelectedPhoneColumn(null);
-    setCsvLines([]);
+    setHeaders([]);
+    setPreviewRows([]);
+    setSelectedNombre('');
+    setSelectedTelefono('');
+    setProcessedData(null);
   };
 
   return (
@@ -217,56 +235,63 @@ const ContactsUploader = ({ setCsvData }) => {
           <strong>Archivo subido:</strong> {fileName}
         </FilePreview>
       )}
-
-      {headers && (
-        <div>
-          <h3>Selecciona las columnas:</h3>
-          <div>
-            <label>Columna de Teléfono:</label>
-            <select
-              value={selectedPhoneColumn != null ? selectedPhoneColumn : ''}
-              onChange={(e) => setSelectedPhoneColumn(Number(e.target.value))}
-            >
-              <option value="" disabled>Seleccione</option>
-              {headers.map((header, index) => (
-                <option key={index} value={index}>{header}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Columna de Nombre (opcional):</label>
-            <select
-              value={selectedNameColumn != null ? selectedNameColumn : ''}
-              onChange={(e) => setSelectedNameColumn(Number(e.target.value))}
-            >
-              <option value="" disabled>Seleccione</option>
-              {headers.map((header, index) => (
-                <option key={index} value={index}>{header}</option>
-              ))}
-            </select>
-          </div>
-
-          <table>
+      
+      {/* Mostrar la vista previa y las opciones de selección si hay datos procesados */}
+      {previewRows.length > 0 && headers.length > 0 && (
+        <>
+          <h3>Vista Previa</h3>
+          <PreviewTable>
             <thead>
               <tr>
-                {headers.map((header, index) => (
-                  <th key={index}>{header}</th>
+                {headers.map((header, idx) => (
+                  <th key={idx}>{header}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {previewData.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={cellIndex}>{cell}</td>
+              {previewRows.map((row, idx) => (
+                <tr key={idx}>
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx}>{cell}</td>
                   ))}
                 </tr>
               ))}
             </tbody>
-          </table>
+          </PreviewTable>
 
-          <button onClick={handleProcessData}>Procesar Datos</button>
-        </div>
+          <SelectContainer>
+            <div>
+              <label htmlFor="nombreSelect">Selecciona la columna de Nombre (opcional): </label>
+              <Select 
+                id="nombreSelect" 
+                value={selectedNombre} 
+                onChange={(e) => setSelectedNombre(e.target.value)}
+              >
+                <option value="">-- Ninguno --</option>
+                {headers.map((header, idx) => (
+                  <option key={idx} value={header}>{header}</option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="telefonoSelect">Selecciona la columna de Teléfono: </label>
+              <Select 
+                id="telefonoSelect" 
+                value={selectedTelefono} 
+                onChange={(e) => setSelectedTelefono(e.target.value)}
+              >
+                <option value="">-- Seleccionar --</option>
+                {headers.map((header, idx) => (
+                  <option key={idx} value={header}>{header}</option>
+                ))}
+              </Select>
+            </div>
+          </SelectContainer>
+
+          <ConfirmButton onClick={handleConfirmSelection}>
+            Confirmar Selección
+          </ConfirmButton>
+        </>
       )}
     </UploaderWrapper>
   );

@@ -218,7 +218,9 @@ const ContactsUploader = ({ setCsvData }) => {
       if (nombreIdx !== -1 && columns.length > nombreIdx) {
         nombre = columns[nombreIdx].trim();
         // Asegurarse de que 'nombre' no sea undefined o null
-        if (!nombre) nombre = '';
+        if (!nombre) nombre = '.';
+      } else {
+        nombre = '.'; // Asignar '.' si no se selecciona la columna de Nombre
       }
 
       let telefono = '';

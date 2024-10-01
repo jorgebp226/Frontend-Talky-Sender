@@ -157,7 +157,7 @@ function SendMessages() {
     return 9 * numRows;
   };
 
-  const startProgress = (totalTime, initialProgress = 0) => {
+  const startProgress = (totalTime, numRows, initialProgress = 0) => {
     let timeElapsed = (initialProgress / 100) * totalTime;
 
     intervalRef.current = setInterval(() => {
@@ -225,9 +225,10 @@ function SendMessages() {
           );
           // Empezar el progreso después de la respuesta del servidor
           setIsSending(true);
+          const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
           const totalTime = calculateTotalTime(csvData);
           setTimeLeft(totalTime / 60);
-          startProgress(totalTime);
+          startProgress(totalTime, numRows);
         } else if (response.status === 400) {
           const { error } = response.data;
           setErrorMessage(`${error}. Contacta con nosotros en info@betalky.com`);
@@ -280,7 +281,8 @@ function SendMessages() {
         if (response.status === 200) {
           setIsPaused(false);
           const totalTime = calculateTotalTime(csvData);
-          startProgress(totalTime, progress); // Reanudar desde el progreso actual
+          const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
+          startProgress(totalTime, numRows, progress); // Reanudar desde el progreso actual
         }
       }
     } catch (error) {
@@ -301,7 +303,8 @@ function SendMessages() {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
       const totalTime = calculateTotalTime(csvData);
-      startProgress(totalTime, progress); // Continuar desde el progreso actual
+      const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
+      startProgress(totalTime, numRows, progress); // Continuar desde el progreso actual
     }
 
     return () => clearInterval(intervalRef.current);

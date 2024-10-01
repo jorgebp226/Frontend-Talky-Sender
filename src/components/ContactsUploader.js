@@ -204,6 +204,28 @@ const ContactsUploader = ({ setCsvData }) => {
     setFileName('');
   };
 
+  // Función para convertir array de objetos a cadena CSV
+  const convertArrayToCSV = (array) => {
+    if (array.length === 0) return '';
+
+    const headers = Object.keys(array[0]);
+    const csvRows = [];
+
+    // Agregar encabezados
+    csvRows.push(headers.join(';'));
+
+    // Agregar filas
+    array.forEach(row => {
+      const values = headers.map(header => {
+        const escaped = ('' + row[header]).replace(/"/g, '\\"');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(';'));
+    });
+
+    return csvRows.join('\n');
+  };
+
   // Procesar los datos cuando las columnas están seleccionadas
   useEffect(() => {
     if (csvRows.length > 0 && selectedPhoneColumn) {
@@ -222,7 +244,7 @@ const ContactsUploader = ({ setCsvData }) => {
       return;
     }
 
-    const processedData = csvRows.reduce((acc, row, index) => {
+    const processedData = csvRows.reduce((acc, row) => {
       let phone = row[selectedPhoneColumn].toString().trim();
       // Eliminar caracteres no numéricos
       phone = phone.replace(/\D/g, '');
@@ -252,7 +274,10 @@ const ContactsUploader = ({ setCsvData }) => {
       return;
     }
 
-    setCsvData(processedData);
+    // Convertir el array de objetos a una cadena CSV
+    const csvString = convertArrayToCSV(processedData);
+
+    setCsvData(csvString);
     setSuccess('Datos procesados correctamente y listos para enviar.');
   };
 

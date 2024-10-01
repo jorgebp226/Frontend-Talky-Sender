@@ -139,7 +139,7 @@ const CloseButton = styled.button`
 function SendMessages() {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
-  const [csvData, setCsvData] = useState(null); // Ahora es una cadena CSV
+  const [csvData, setCsvData] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -153,11 +153,11 @@ function SendMessages() {
   const navigate = useNavigate();
 
   const calculateTotalTime = (csvData) => {
-    const numRows = csvData.split('\n').length - 1; // Restar encabezados
+    const numRows = csvData.split('\n').length;
     return 9 * numRows;
   };
 
-  const startProgress = (totalTime, numRows, initialProgress = 0) => {
+  const startProgress = (totalTime, initialProgress = 0) => {
     let timeElapsed = (initialProgress / 100) * totalTime;
 
     intervalRef.current = setInterval(() => {
@@ -175,7 +175,7 @@ function SendMessages() {
             pathname: '/resumen',
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: numRows
+              numMensajes: csvData.split('\n').length
             }
           });
         }
@@ -186,7 +186,6 @@ function SendMessages() {
   const handleAction = async () => {
     if (!isSending) {
       if (!message || !csvData) {
-        setErrorMessage('Por favor, completa el mensaje y sube contactos válidos.');
         return;
       }
       setErrorMessage('');
@@ -202,7 +201,7 @@ function SendMessages() {
         const payload = {
           mensaje: message,
           imagen: image,
-          csv_data: csvData, // Ahora es una cadena CSV
+          csv_data: csvData,
           user_id: userId
         };
         
@@ -225,10 +224,9 @@ function SendMessages() {
           );
           // Empezar el progreso después de la respuesta del servidor
           setIsSending(true);
-          const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
           const totalTime = calculateTotalTime(csvData);
           setTimeLeft(totalTime / 60);
-          startProgress(totalTime, numRows);
+          startProgress(totalTime);
         } else if (response.status === 400) {
           const { error } = response.data;
           setErrorMessage(`${error}. Contacta con nosotros en info@betalky.com`);
@@ -281,8 +279,7 @@ function SendMessages() {
         if (response.status === 200) {
           setIsPaused(false);
           const totalTime = calculateTotalTime(csvData);
-          const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
-          startProgress(totalTime, numRows, progress); // Reanudar desde el progreso actual
+          startProgress(totalTime, progress); // Reanudar desde el progreso actual
         }
       }
     } catch (error) {
@@ -303,8 +300,7 @@ function SendMessages() {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
       const totalTime = calculateTotalTime(csvData);
-      const numRows = csvData.split('\n').length - 1; // Calcular el número de filas (sin encabezados)
-      startProgress(totalTime, numRows, progress); // Continuar desde el progreso actual
+      startProgress(totalTime, progress); // Continuar desde el progreso actual
     }
 
     return () => clearInterval(intervalRef.current);

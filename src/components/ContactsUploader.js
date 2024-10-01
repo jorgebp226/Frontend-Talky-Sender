@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import contactsIcon from '../assets/images/contacts-icon.png';
 import * as XLSX from 'xlsx';
@@ -62,224 +62,89 @@ const DownloadLink = styled.a`
   cursor: pointer;
 `;
 
-const PreviewTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  th {
-    background-color: #f2f2f2;
-  }
-`;
-
-const SelectWrapper = styled.div`
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-`;
-
-const SelectLabel = styled.label`
-  display: flex;
-  flex-direction: column;
-  font-weight: bold;
-`;
-
-const ErrorMessage = styled.p`
-  color: red;
-  margin-top: 10px;
-`;
-
-const SuccessMessage = styled.p`
-  color: green;
-  margin-top: 10px;
-`;
-
 const ContactsUploader = ({ setCsvData }) => {
   const [fileName, setFileName] = useState('');
-  const [csvRows, setCsvRows] = useState([]);
-  const [headers, setHeaders] = useState([]);
-  const [selectedPhoneColumn, setSelectedPhoneColumn] = useState('');
-  const [selectedNameColumn, setSelectedNameColumn] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    resetState();
     if (file) {
       setFileName(file.name);
       if (file.name.endsWith('.xlsx')) {
         readExcelFile(file);
       } else if (file.name.endsWith('.csv')) {
-        readCsvFile(file);
-      } else {
-        setError('Formato de archivo no soportado. Por favor, sube un archivo CSV o XLSX.');
+        const reader = new FileReader();
+        reader.onload = () => {
+          processCsvData(reader.result);
+        };
+        reader.readAsText(file);
       }
     }
-  };
-
-  const resetState = () => {
-    setCsvRows([]);
-    setHeaders([]);
-    setSelectedPhoneColumn('');
-    setSelectedNameColumn('');
-    setError('');
-    setSuccess('');
   };
 
   const readExcelFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-        if (jsonData.length === 0) {
-          setError('El archivo está vacío.');
-          return;
-        }
-        const extractedHeaders = Object.keys(jsonData[0]);
-        setHeaders(extractedHeaders);
-        setCsvRows(jsonData);
-        preselectColumns(extractedHeaders);
-      } catch (err) {
-        setError('Error al leer el archivo Excel.');
-      }
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      let csv = XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
+      processCsvData(csv);
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const readCsvFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const csvData = reader.result;
-        const workbook = XLSX.read(csvData, { type: 'string' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-        if (jsonData.length === 0) {
-          setError('El archivo está vacío.');
-          return;
+  const processCsvData = (csvData) => {
+    // Dividir el CSV en líneas
+    let lines = csvData.split(/\r\n|\n/);
+    
+    // Determinar el separador (coma o punto y coma)
+    const separator = lines[0].includes(';') ? ';' : ',';
+    
+    // Convertir el separador a punto y coma si es necesario
+    if (separator === ',') {
+      lines = lines.map(line => line.split(',').map(cell => cell.replace(/"/g, '').trim()).join(';'));
+    }
+    
+    // Encontrar los índices de las columnas 'Nombre' y 'Teléfono'
+    let headers = lines[0].split(';');
+    let nombreIndex = headers.findIndex(h => h.trim().toLowerCase() === 'nombre');
+    let telefonoIndex = headers.findIndex(h => h.trim().toLowerCase() === 'teléfono' || h.trim().toLowerCase() === 'telefono');
+    
+    // Si no se encuentran las columnas, buscar alternativas
+    if (nombreIndex === -1) nombreIndex = headers.findIndex(h => h.trim().toLowerCase().includes('nombre'));
+    if (telefonoIndex === -1) telefonoIndex = headers.findIndex(h => h.trim().toLowerCase().includes('telefono') || h.trim().toLowerCase().includes('teléfono'));
+    
+    // Si aún no se encuentran, usar las dos primeras columnas
+    if (nombreIndex === -1) nombreIndex = 0;
+    if (telefonoIndex === -1) telefonoIndex = 1;
+    
+    // Asegurarse de que 'Nombre' y 'Teléfono' estén en las primeras dos columnas
+    if (nombreIndex !== 0 || telefonoIndex !== 1) {
+      lines = lines.map((line, index) => {
+        if (index === 0) {
+          return `Nombre;Teléfono;${headers.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
+        } else {
+          const columns = line.split(';');
+          return `${columns[nombreIndex]};${columns[telefonoIndex]};${columns.filter((_, i) => i !== nombreIndex && i !== telefonoIndex).join(';')}`;
         }
-        const extractedHeaders = Object.keys(jsonData[0]);
-        setHeaders(extractedHeaders);
-        setCsvRows(jsonData);
-        preselectColumns(extractedHeaders);
-      } catch (err) {
-        setError('Error al procesar el archivo CSV.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const preselectColumns = (extractedHeaders) => {
-    // Preseleccionar columna de Teléfono
-    const phoneCandidates = extractedHeaders.filter(header => 
-      ['telefono', 'teléfono'].includes(header.trim().toLowerCase())
-    );
-    if (phoneCandidates.length > 0) {
-      setSelectedPhoneColumn(phoneCandidates[0]);
+      });
     }
-
-    // Preseleccionar columna de Nombre
-    const nameCandidates = extractedHeaders.filter(header => 
-      header.trim().toLowerCase() === 'nombre'
-    );
-    if (nameCandidates.length > 0) {
-      setSelectedNameColumn(nameCandidates[0]);
-    }
+    
+    // Unir las líneas de nuevo en un string CSV
+    let newCsv = lines.join('\n');
+    
+    // Limpiar el CSV de posibles caracteres no deseados
+    newCsv = newCsv.replace(/[\r\n]+/g, '\n').trim();
+    
+    setCsvData(newCsv);
   };
 
   const handleRemoveFile = () => {
-    resetState();
+    setCsvData(null);
     setFileName('');
   };
 
-  // Función para convertir array de objetos a cadena CSV
-  const convertArrayToCSV = (array) => {
-    if (array.length === 0) return '';
-
-    const headers = Object.keys(array[0]);
-    const csvRows = [];
-
-    // Agregar encabezados
-    csvRows.push(headers.join(';'));
-
-    // Agregar filas
-    array.forEach(row => {
-      const values = headers.map(header => {
-        const escaped = ('' + row[header]).replace(/"/g, '\\"');
-        return `"${escaped}"`;
-      });
-      csvRows.push(values.join(';'));
-    });
-
-    return csvRows.join('\n');
-  };
-
-  // Procesar los datos cuando las columnas están seleccionadas
-  useEffect(() => {
-    if (csvRows.length > 0 && selectedPhoneColumn) {
-      processData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPhoneColumn, selectedNameColumn]);
-
-  const processData = () => {
-    setError('');
-    setSuccess('');
-
-    // Verificar que la columna de Teléfono esté seleccionada
-    if (!selectedPhoneColumn) {
-      setError('Por favor, selecciona la columna de Teléfono.');
-      return;
-    }
-
-    const processedData = csvRows.reduce((acc, row) => {
-      let phone = row[selectedPhoneColumn].toString().trim();
-      // Eliminar caracteres no numéricos
-      phone = phone.replace(/\D/g, '');
-
-      if (phone.length === 9) {
-        phone = `34${phone}`;
-      } else if (phone.length > 9) {
-        // Dejar como está
-      } else {
-        // Ignorar filas con teléfonos con menos de 9 dígitos
-        return acc;
-      }
-
-      const name = selectedNameColumn ? row[selectedNameColumn].toString().trim() : '';
-
-      acc.push({
-        telefono: phone,
-        nombre: name || ''
-      });
-
-      return acc;
-    }, []);
-
-    if (processedData.length === 0) {
-      setError('No hay datos válidos para enviar después de procesar.');
-      setCsvData(null);
-      return;
-    }
-
-    // Convertir el array de objetos a una cadena CSV
-    const csvString = convertArrayToCSV(processedData);
-
-    setCsvData(csvString);
-    setSuccess('Datos procesados correctamente y listos para enviar.');
-  };
 
   return (
     <UploaderWrapper>
@@ -303,60 +168,6 @@ const ContactsUploader = ({ setCsvData }) => {
           <CloseButton onClick={handleRemoveFile}>×</CloseButton>
           <strong>Archivo subido:</strong> {fileName}
         </FilePreview>
-      )}
-      {csvRows.length > 0 && (
-        <>
-          <h3>Vista Previa</h3>
-          <PreviewTable>
-            <thead>
-              <tr>
-                {headers.map((header, idx) => (
-                  <th key={idx}>{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {csvRows.slice(0, 3).map((row, idx) => (
-                <tr key={idx}>
-                  {headers.map((header, hIdx) => (
-                    <td key={hIdx}>{row[header]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </PreviewTable>
-
-          <SelectWrapper>
-            <SelectLabel>
-              Columna de Teléfono:
-              <select 
-                value={selectedPhoneColumn} 
-                onChange={(e) => setSelectedPhoneColumn(e.target.value)}
-              >
-                <option value="">-- Selecciona --</option>
-                {headers.map((header, idx) => (
-                  <option key={idx} value={header}>{header}</option>
-                ))}
-              </select>
-            </SelectLabel>
-
-            <SelectLabel>
-              Columna de Nombre (opcional):
-              <select 
-                value={selectedNameColumn} 
-                onChange={(e) => setSelectedNameColumn(e.target.value)}
-              >
-                <option value="">-- Selecciona --</option>
-                {headers.map((header, idx) => (
-                  <option key={idx} value={header}>{header}</option>
-                ))}
-              </select>
-            </SelectLabel>
-          </SelectWrapper>
-
-          {error && <ErrorMessage>{error}</ErrorMessage>}
-          {success && <SuccessMessage>{success}</SuccessMessage>}
-        </>
       )}
     </UploaderWrapper>
   );

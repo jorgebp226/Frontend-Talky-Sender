@@ -139,7 +139,7 @@ const CloseButton = styled.button`
 function SendMessages() {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
-  const [csvData, setCsvData] = useState(null);
+  const [csvData, setCsvData] = useState(null); // Ahora es una cadena CSV
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -153,7 +153,7 @@ function SendMessages() {
   const navigate = useNavigate();
 
   const calculateTotalTime = (csvData) => {
-    const numRows = csvData.split('\n').length;
+    const numRows = csvData.split('\n').length - 1; // Restar encabezados
     return 9 * numRows;
   };
 
@@ -175,7 +175,7 @@ function SendMessages() {
             pathname: '/resumen',
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: csvData.split('\n').length
+              numMensajes: numRows
             }
           });
         }
@@ -186,6 +186,7 @@ function SendMessages() {
   const handleAction = async () => {
     if (!isSending) {
       if (!message || !csvData) {
+        setErrorMessage('Por favor, completa el mensaje y sube contactos válidos.');
         return;
       }
       setErrorMessage('');
@@ -201,7 +202,7 @@ function SendMessages() {
         const payload = {
           mensaje: message,
           imagen: image,
-          csv_data: csvData,
+          csv_data: csvData, // Ahora es una cadena CSV
           user_id: userId
         };
         

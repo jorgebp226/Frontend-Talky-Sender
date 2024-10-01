@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import contactsIcon from '../assets/images/contacts-icon.png';
 import * as XLSX from 'xlsx';
@@ -81,6 +81,7 @@ const SelectWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
 `;
 
 const SelectLabel = styled.label`
@@ -89,18 +90,13 @@ const SelectLabel = styled.label`
   font-weight: bold;
 `;
 
-const ProcessButton = styled.button`
-  margin-top: 20px;
-  padding: 10px 15px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-`;
-
 const ErrorMessage = styled.p`
   color: red;
+  margin-top: 10px;
+`;
+
+const SuccessMessage = styled.p`
+  color: green;
   margin-top: 10px;
 `;
 
@@ -111,6 +107,7 @@ const ContactsUploader = ({ setCsvData }) => {
   const [selectedPhoneColumn, setSelectedPhoneColumn] = useState('');
   const [selectedNameColumn, setSelectedNameColumn] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -120,11 +117,7 @@ const ContactsUploader = ({ setCsvData }) => {
       if (file.name.endsWith('.xlsx')) {
         readExcelFile(file);
       } else if (file.name.endsWith('.csv')) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          processCsvData(reader.result);
-        };
-        reader.readAsText(file);
+        readCsvFile(file);
       } else {
         setError('Formato de archivo no soportado. Por favor, sube un archivo CSV o XLSX.');
       }
@@ -137,6 +130,7 @@ const ContactsUploader = ({ setCsvData }) => {
     setSelectedPhoneColumn('');
     setSelectedNameColumn('');
     setError('');
+    setSuccess('');
   };
 
   const readExcelFile = (file) => {
@@ -163,33 +157,32 @@ const ContactsUploader = ({ setCsvData }) => {
     reader.readAsArrayBuffer(file);
   };
 
-  const processCsvData = (csvData) => {
-    try {
-      // Determinar el separador (coma o punto y coma)
-      const separator = csvData.includes(';') ? ';' : ',';
-
-      // Convertir el CSV a JSON
-      const workbook = XLSX.read(csvData, { type: 'string' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-      if (jsonData.length === 0) {
-        setError('El archivo está vacío.');
-        return;
+  const readCsvFile = (file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const csvData = reader.result;
+        const workbook = XLSX.read(csvData, { type: 'string' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        if (jsonData.length === 0) {
+          setError('El archivo está vacío.');
+          return;
+        }
+        const extractedHeaders = Object.keys(jsonData[0]);
+        setHeaders(extractedHeaders);
+        setCsvRows(jsonData);
+        preselectColumns(extractedHeaders);
+      } catch (err) {
+        setError('Error al procesar el archivo CSV.');
       }
-
-      const extractedHeaders = Object.keys(jsonData[0]);
-      setHeaders(extractedHeaders);
-      setCsvRows(jsonData);
-      preselectColumns(extractedHeaders);
-    } catch (err) {
-      setError('Error al procesar el archivo CSV.');
-    }
+    };
+    reader.readAsText(file);
   };
 
   const preselectColumns = (extractedHeaders) => {
-    // Preseleccionar columnas de Teléfono
+    // Preseleccionar columna de Teléfono
     const phoneCandidates = extractedHeaders.filter(header => 
       ['telefono', 'teléfono'].includes(header.trim().toLowerCase())
     );
@@ -197,7 +190,7 @@ const ContactsUploader = ({ setCsvData }) => {
       setSelectedPhoneColumn(phoneCandidates[0]);
     }
 
-    // Preseleccionar columnas de Nombre
+    // Preseleccionar columna de Nombre
     const nameCandidates = extractedHeaders.filter(header => 
       header.trim().toLowerCase() === 'nombre'
     );
@@ -211,9 +204,19 @@ const ContactsUploader = ({ setCsvData }) => {
     setFileName('');
   };
 
-  const handleProcessData = () => {
-    setError('');
+  // Procesar los datos cuando las columnas están seleccionadas
+  useEffect(() => {
+    if (csvRows.length > 0 && selectedPhoneColumn) {
+      processData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPhoneColumn, selectedNameColumn]);
 
+  const processData = () => {
+    setError('');
+    setSuccess('');
+
+    // Verificar que la columna de Teléfono esté seleccionada
     if (!selectedPhoneColumn) {
       setError('Por favor, selecciona la columna de Teléfono.');
       return;
@@ -237,28 +240,20 @@ const ContactsUploader = ({ setCsvData }) => {
 
       acc.push({
         telefono: phone,
-        nombre: name
+        nombre: name || ''
       });
 
       return acc;
     }, []);
 
     if (processedData.length === 0) {
-      setError('No hay datos válidos para enviar.');
+      setError('No hay datos válidos para enviar después de procesar.');
+      setCsvData(null);
       return;
     }
 
-    // Convertir a CSV o al formato que espera la API
-    const apiData = processedData.map(contact => ({
-      telefono: contact.telefono,
-      nombre: contact.nombre || ''
-    }));
-
-    setCsvData(apiData);
-    alert('Datos procesados y enviados correctamente.');
-    // Opcional: Resetear el componente después de enviar
-    resetState();
-    setFileName('');
+    setCsvData(processedData);
+    setSuccess('Datos procesados correctamente y listos para enviar.');
   };
 
   return (
@@ -335,10 +330,7 @@ const ContactsUploader = ({ setCsvData }) => {
           </SelectWrapper>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
-
-          <ProcessButton onClick={handleProcessData}>
-            Procesar y Enviar
-          </ProcessButton>
+          {success && <SuccessMessage>{success}</SuccessMessage>}
         </>
       )}
     </UploaderWrapper>

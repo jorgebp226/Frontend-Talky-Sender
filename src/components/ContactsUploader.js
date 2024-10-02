@@ -220,7 +220,7 @@ const ContactsUploader = ({ setCsvData }) => {
         // Asegurarse de que 'nombre' no sea undefined o null
         if (!nombre) nombre = 'a'; // Cambiado de '.' a 'a'
       } else {
-        nombre = 'a'; // Asignar 'a' si no se selecciona la columna de Nombre
+        nombre = ','; // Asignar 'a' si no se selecciona la columna de Nombre
       }
 
       let telefono = '';

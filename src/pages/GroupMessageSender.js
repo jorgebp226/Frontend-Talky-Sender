@@ -223,7 +223,7 @@ function GroupMessageSender() {
         if (timeElapsed >= totalTime) {
           clearInterval(intervalRef.current);
           setIsSending(false);
-          navigate('/resumen-envio', {
+          navigate('/resumen', {
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
               numMensajes: numPhoneNumbers

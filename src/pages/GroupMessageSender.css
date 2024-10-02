@@ -121,3 +121,71 @@ button:disabled {
   margin-top: 20px;
   width: 100%;
 }
+.group-message-sender-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2e2e2e;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.error-message {
+  color: #ff4d4d;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.dropdown-container {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d1d1;
+  border-radius: 8px;
+}
+
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #d1d1d1;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-item.selected {
+  background-color: #f0f8ff;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #93c5fd;
+}
+
+.progress-bar-container {
+  margin-top: 20px;
+}

@@ -1,63 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import '../pages/GroupMessageSender.css'; // Usa el mismo CSS para asegurar consistencia
 import axios from 'axios';
-import styled from 'styled-components';
-
-const SelectorWrapper = styled.div`
-  margin-bottom: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 20px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const GroupList = styled.div`
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const GroupItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  cursor: pointer;
-  &:hover {
-    background-color: #f0f0f0;
-  }
-`;
-
-const CheckBox = styled.input`
-  margin-right: 10px;
-`;
-
-const FetchButton = styled.button`
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  &:disabled {
-    background-color: #ccc;
-  }
-`;
-
-const ContactsSummary = styled.div`
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f0f9ff;
-  border-radius: 4px;
-`;
 
 function GroupContactSelector({ onGroupSelection, onFetchContacts, isProcessing, groupContactsData }) {
   const [groups, setGroups] = useState([]);
@@ -130,38 +73,55 @@ function GroupContactSelector({ onGroupSelection, onFetchContacts, isProcessing,
   };
 
   return (
-    <SelectorWrapper>
-      <h2>Seleccionar Grupos</h2>
-      <SearchInput
-        type="text"
-        placeholder="Buscar grupos..."
-        value={searchTerm}
-        onChange={handleSearch}
-      />
-      <GroupList>
-        {filteredGroups.map(group => (
-          <GroupItem key={group.id} onClick={() => handleGroupToggle(group)}>
-            <CheckBox
-              type="checkbox"
-              checked={selectedGroups.some(g => g.id === group.id)}
-              readOnly
-            />
-            {group.name}
-          </GroupItem>
+    <div className="group-message-sender-container">
+      <h2>Seleccionar Grupos para Enviar Mensajes</h2>
+      <div className="dropdown-container">
+        <input
+          type="text"
+          placeholder="Buscar grupos..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="search-input"
+        />
+        <div className="dropdown-list">
+          {filteredGroups.map(group => {
+            const isSelected = selectedGroups.find(selected => selected.id === group.id);
+            return (
+              <div
+                key={group.id}
+                className={`dropdown-item ${isSelected ? 'selected' : ''}`}
+                onClick={() => handleGroupToggle(group)}
+              >
+                <div className={`selection-circle ${isSelected ? 'selected-circle' : ''}`}></div>
+                <span className="group-name">{group.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="selected-groups-container">
+        {selectedGroups.map(group => (
+          <div key={group.id} className="selected-group">
+            <span className="selected-group-name">{group.name}</span>
+            <button className="remove-button" onClick={() => setSelectedGroups(selectedGroups.filter(g => g.id !== group.id))}>×</button>
+          </div>
         ))}
-      </GroupList>
-      <FetchButton
+      </div>
+
+      <button
         onClick={onFetchContacts}
         disabled={isProcessing || selectedGroups.length === 0}
+        className="fetch-contacts-button"
       >
         {isProcessing ? 'Obteniendo Contactos...' : 'Obtener Contactos'}
-      </FetchButton>
+      </button>
+
       {groupContactsData && (
-        <ContactsSummary>
+        <div className="contacts-summary">
           Se han obtenido {groupContactsData.split('\n').length - 1} contactos de los grupos seleccionados.
-        </ContactsSummary>
+        </div>
       )}
-    </SelectorWrapper>
+    </div>
   );
 }
 

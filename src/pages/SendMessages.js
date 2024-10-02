@@ -6,6 +6,7 @@ import GlobalStyle from '../styles/GlobalStyle';
 import MessageForm from '../components/MessageForm';
 import ImageUploader from '../components/ImageUploader';
 import ContactsUploader from '../components/ContactsUploader';
+import GroupContactSelector from '../components/GroupContactSelector';
 import ProgressBar from '../components/ProgressBar';
 import ConfirmationModal from '../components/ConfirmationModal';
 

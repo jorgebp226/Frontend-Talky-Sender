@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './GroupMessageSender.css';  // Asegúrate de tener este archivo con los estilos adecuados
 import MessageForm from '../components/MessageForm';
 import ImageUploader from '../components/ImageUploader';
 import ProgressBar from '../components/ProgressBar';
@@ -10,6 +11,7 @@ function GroupMessageSender() {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filteredGroups, setFilteredGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [isSending, setIsSending] = useState(false);
@@ -24,7 +26,6 @@ function GroupMessageSender() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Llamada para obtener los grupos desde la API
     const fetchGroups = async () => {
       const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
       const userId = userAttributes?.sub;
@@ -88,7 +89,6 @@ function GroupMessageSender() {
     }, 1000);
   };
 
-  // Generar el CSV en el formato requerido
   const generateCsvData = (phoneNumbers) => {
     let csvData = 'Nombre;Teléfono\n';
     phoneNumbers.forEach(phoneNumber => {
@@ -118,17 +118,15 @@ function GroupMessageSender() {
         });
 
         if (contactsResponse.status === 200) {
-          // Parsear el cuerpo de la respuesta (que está en formato JSON dentro de un string)
           const body = JSON.parse(contactsResponse.data.body);
           const phoneNumbers = body.phoneNumbers;
 
-          // Generar el CSV en el formato adecuado para la API
           const csvData = generateCsvData(phoneNumbers);
 
           const payload = {
             mensaje: message,
             imagen: image,
-            csv_data: csvData,  // Enviar el csvData en el formato adecuado
+            csv_data: csvData,
             user_id: userId,
           };
 
@@ -182,7 +180,7 @@ function GroupMessageSender() {
         const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/reanudar', {
           mensaje: message,
           imagen: image,
-          csv_data: generateCsvData(selectedGroups.map(group => group.id)),  // Reanudar con el CSV generado
+          csv_data: generateCsvData(selectedGroups.map(group => group.id)),
           user_id: userId
         }, {
           timeout: 60000
@@ -191,7 +189,7 @@ function GroupMessageSender() {
         if (response.status === 200) {
           setIsPaused(false);
           const totalTime = calculateTotalTime(selectedGroups.length);
-          startProgressBar(totalTime, progress); // Reanudar desde el progreso actual
+          startProgressBar(totalTime, progress);
         }
       }
     } catch (error) {
@@ -212,30 +210,50 @@ function GroupMessageSender() {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
       const totalTime = calculateTotalTime(selectedGroups.length);
-      startProgressBar(totalTime, progress); // Continuar desde el progreso actual
+      startProgressBar(totalTime, progress);
     }
 
     return () => clearInterval(intervalRef.current);
   }, [isPaused]);
 
   return (
-    <div className="group-message-sender">
+    <div className="group-message-sender-container">
+      <h2>Envío de Mensajes a Grupos</h2>
       <MessageForm setMessage={setMessage} />
       <ImageUploader setImage={setImage} />
-      
-      <div className="group-selector">
-        <input type="text" placeholder="Buscar grupos..." onChange={handleSearch} />
-        <div className="group-list">
-          {filteredGroups.map(group => (
-            <div
-              key={group.id}
-              className={`group-item ${selectedGroups.includes(group) ? 'selected' : ''}`}
-              onClick={() => toggleGroupSelection(group)}
-            >
-              {group.name}
-            </div>
-          ))}
+
+      <div className="dropdown-container">
+        <input
+          type="text"
+          placeholder="Buscar grupos..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="search-input"
+        />
+        <div className="dropdown-list">
+          {filteredGroups.map(group => {
+            const isSelected = selectedGroups.some(selected => selected.id === group.id);
+            return (
+              <div
+                key={group.id}
+                className={`dropdown-item ${isSelected ? 'selected' : ''}`}
+                onClick={() => toggleGroupSelection(group)}
+              >
+                <div className={`selection-circle ${isSelected ? 'selected-circle' : ''}`}></div>
+                <span className="group-name">{group.name}</span>
+              </div>
+            );
+          })}
         </div>
+      </div>
+
+      <div className="selected-groups-container">
+        {selectedGroups.map(group => (
+          <div key={group.id} className="selected-group">
+            <span className="selected-group-name">{group.name}</span>
+            <button className="remove-button" onClick={() => setSelectedGroups(selectedGroups.filter(g => g.id !== group.id))}>×</button>
+          </div>
+        ))}
       </div>
 
       <button onClick={handleAction} disabled={isProcessing}>

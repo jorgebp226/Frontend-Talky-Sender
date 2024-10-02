@@ -159,10 +159,13 @@ function GroupMessageSender() {
           throw new Error('Formato de respuesta inválido: phoneNumbers no está presente o no es una matriz.');
         }
 
-        const generatedCsvData = generateCsvData(phoneNumbers);
-        setCsvData(generatedCsvData);
-        setNumPhoneNumbers(phoneNumbers.length);
-        // Opcional: Mostrar una notificación o mensaje
+        const generateCsvData = (phoneNumbers) => {
+          let csv = 'Nombre;Teléfono\n';  // Encabezado de las columnas
+          phoneNumbers.forEach(phone => {
+            csv += `,${phone}\n`;  // Añade una coma en la columna "Nombre" y luego el número de teléfono en "Teléfono"
+          });
+          return csv;
+        };
       } else {
         console.error('Error al obtener los contactos de los grupos.');
         setErrorMessage('Error al obtener los contactos de los grupos.');

@@ -2,38 +2,67 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import ProgressBar from '../components/ProgressBar'; // Asegúrate de tener este componente
-import ConfirmationModal from '../components/ConfirmationModal'; // Asegúrate de tener este componente
-import MessageForm from '../components/MessageForm'; // Asegúrate de tener este componente
-import ImageUploader from '../components/ImageUploader'; // Asegúrate de tener este componente
-import './GroupMessageSender.css'; // Archivo CSS correspondiente
+import ProgressBar from '../components/ProgressBar';
+import ConfirmationModal from '../components/ConfirmationModal';
+import MessageForm from '../components/MessageForm';
+import ImageUploader from '../components/ImageUploader';
+import './GroupMessageSender.css'; // Asegúrate de que este archivo exista
 
 function GroupMessageSender() {
+  // Estados para gestionar el mensaje, imagen y grupos
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
   const [groups, setGroups] = useState([]);
   const [filteredGroups, setFilteredGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
+  
+  // Estados para gestionar los contactos y el CSV
   const [csvData, setCsvData] = useState(null);
+  const [numPhoneNumbers, setNumPhoneNumbers] = useState(0);
+  const [isFetchingContacts, setIsFetchingContacts] = useState(false);
+  
+  // Estados para gestionar el envío de mensajes
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isResuming, setIsResuming] = useState(false);
+  
+  // Estados para la barra de progreso y tiempos
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  
+  // Estados para manejar modales y mensajes de error
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Estado para la búsqueda de grupos
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Referencia para el intervalo de la barra de progreso
   const intervalRef = useRef(null);
+  
+  // Hook para la navegación
   const navigate = useNavigate();
 
+  // Efecto para obtener los grupos desde la API al montar el componente
   useEffect(() => {
     const fetchGroups = async () => {
-      const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-      const userId = userAttributes?.sub;
-
       try {
+        const userAttributesStr = localStorage.getItem('userAttributes');
+        if (!userAttributesStr) {
+          console.error('User attributes not found in localStorage');
+          setErrorMessage('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
+          return;
+        }
+        const userAttributes = JSON.parse(userAttributesStr);
+        const userId = userAttributes?.sub;
+        if (!userId) {
+          console.error('User ID not found in localStorage');
+          setErrorMessage('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
+          return;
+        }
+
         const response = await axios.get(
           'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', // Reemplaza con tu URL real
           {
@@ -46,25 +75,35 @@ function GroupMessageSender() {
           setGroups(response.data);
           setFilteredGroups(response.data);
         } else {
+          console.error('Error: La respuesta de la API no contiene un array válido.');
           setGroups([]);
           setFilteredGroups([]);
+          setErrorMessage('Error al obtener los grupos.');
         }
       } catch (error) {
-        console.error('Error al obtener los grupos:', error);
+        console.error('Error fetching groups:', error);
         setGroups([]);
         setFilteredGroups([]);
+        setErrorMessage('Error al obtener los grupos.');
       }
     };
 
     fetchGroups();
   }, []);
 
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    setFilteredGroups(groups.filter(group => group.name.toLowerCase().includes(term)));
-  };
+  // Efecto para filtrar los grupos según el término de búsqueda
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredGroups(groups);
+    } else {
+      const filtered = groups.filter(group =>
+        group.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredGroups(filtered);
+    }
+  }, [searchTerm, groups]);
 
+  // Función para alternar la selección de un grupo
   const toggleGroupSelection = (group) => {
     const isSelected = selectedGroups.some(selected => selected.id === group.id);
     if (isSelected) {
@@ -74,8 +113,81 @@ function GroupMessageSender() {
     }
   };
 
+  // Función para manejar la búsqueda de grupos
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+    // El filtrado se maneja en el useEffect
+  };
+
+  // Función para obtener contactos de los grupos seleccionados
+  const handleFetchContacts = async () => {
+    if (selectedGroups.length === 0) {
+      setErrorMessage('Por favor, selecciona al menos un grupo.');
+      return;
+    }
+    setErrorMessage('');
+    setIsFetchingContacts(true);
+    try {
+      const userAttributesStr = localStorage.getItem('userAttributes');
+      if (!userAttributesStr) {
+        console.error('User attributes not found in localStorage');
+        setErrorMessage('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
+        return;
+      }
+      const userAttributes = JSON.parse(userAttributesStr);
+      const userId = userAttributes?.sub;
+      if (!userId) {
+        console.error('User ID not found in localStorage');
+        setErrorMessage('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
+        return;
+      }
+
+      const groupIds = selectedGroups.map(group => group.id);
+
+      const contactsResponse = await axios.post(
+        'https://940bsd6v9a.execute-api.eu-west-3.amazonaws.com/groups/get_members', // Reemplaza con tu URL real
+        {
+          user_id: userId,
+          groupIds: groupIds,
+        }
+      );
+
+      if (contactsResponse.status === 200) {
+        const phoneNumbers = contactsResponse.data.phoneNumbers;
+        if (!phoneNumbers || !Array.isArray(phoneNumbers)) {
+          throw new Error('Formato de respuesta inválido: phoneNumbers no está presente o no es una matriz.');
+        }
+
+        const generatedCsvData = generateCsvData(phoneNumbers);
+        setCsvData(generatedCsvData);
+        setNumPhoneNumbers(phoneNumbers.length);
+        // Opcional: Mostrar una notificación o mensaje
+      } else {
+        console.error('Error al obtener los contactos de los grupos.');
+        setErrorMessage('Error al obtener los contactos de los grupos.');
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      setErrorMessage(`Error al obtener los contactos: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setIsFetchingContacts(false);
+    }
+  };
+
+  // Función para generar datos CSV a partir de los números de teléfono
+  const generateCsvData = (phoneNumbers) => {
+    let csv = 'Nombre;Teléfono\n';
+    phoneNumbers.forEach(phone => {
+      csv += `,${phone}\n`; // Nombre vacío, solo número
+    });
+    return csv;
+  };
+
+  // Función para calcular el tiempo total basado en el número de contactos
   const calculateTotalTime = (numContacts) => numContacts * 10; // 10 segundos por contacto
 
+  // Función para iniciar la barra de progreso
   const startProgress = (totalTime, initialProgress = 0) => {
     let timeElapsed = (initialProgress / 100) * totalTime;
 
@@ -85,7 +197,7 @@ function GroupMessageSender() {
         const percentage = (timeElapsed / totalTime) * 100;
         const timeRemaining = (totalTime - timeElapsed) / 60;
         setProgress(percentage);
-        setTimeLeft(timeRemaining.toFixed(2));
+        setTimeLeft(timeRemaining);
 
         if (timeElapsed >= totalTime) {
           clearInterval(intervalRef.current);
@@ -93,7 +205,7 @@ function GroupMessageSender() {
           navigate('/resumen-envio', {
             state: {
               horaEnvio: new Date().toLocaleTimeString(),
-              numMensajes: csvData.split('\n').length - 1
+              numMensajes: numPhoneNumbers
             }
           });
         }
@@ -101,80 +213,69 @@ function GroupMessageSender() {
     }, 1000);
   };
 
-  const generateCsvData = (phoneNumbers) => {
-    let csv = 'Nombre;Teléfono\n';
-    phoneNumbers.forEach(phone => {
-      csv += `,${phone}\n`; // Nombre vacío, solo número
-    });
-    return csv;
-  };
-
-  const handleAction = async () => {
+  // Función para manejar el envío de mensajes
+  const handleSendMessages = async () => {
     if (!isSending) {
-      if (!message || selectedGroups.length === 0) {
-        setErrorMessage('Debes escribir un mensaje y seleccionar al menos un grupo.');
+      if (!message || !csvData) {
+        setErrorMessage('Debes escribir un mensaje y obtener los contactos antes de enviar.');
         return;
       }
       setErrorMessage('');
       setIsProcessing(true);
 
       try {
-        const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-        if (!userAttributes || !userAttributes.sub) {
-          throw new Error("userAttributes no encontrados o 'sub' no disponible en localStorage");
+        const userAttributesStr = localStorage.getItem('userAttributes');
+        if (!userAttributesStr) {
+          console.error('User attributes not found in localStorage');
+          setErrorMessage('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
+          return;
         }
-        const userId = userAttributes.sub;
-        const groupIds = selectedGroups.map(group => group.id);
+        const userAttributes = JSON.parse(userAttributesStr);
+        const userId = userAttributes?.sub;
+        if (!userId) {
+          console.error('User ID not found in localStorage');
+          setErrorMessage('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
+          return;
+        }
 
-        const contactsResponse = await axios.post(
-          'https://940bsd6v9a.execute-api.eu-west-3.amazonaws.com/groups/get_members', // Reemplaza con tu URL real
-          {
-            user_id: userId,
-            groupIds: groupIds,
-          }
-        );
+        const payload = {
+          mensaje: message,
+          imagen: image,
+          csv_data: csvData,
+          user_id: userId
+        };
 
-        if (contactsResponse.status === 200) {
-          const phoneNumbers = contactsResponse.data.phoneNumbers;
-          if (!phoneNumbers || !Array.isArray(phoneNumbers)) {
-            throw new Error('Formato de respuesta inválido: phoneNumbers no está presente o no es una matriz.');
-          }
+        console.log('Datos enviados a la API:', payload);
 
-          const generatedCsvData = generateCsvData(phoneNumbers);
-          setCsvData(generatedCsvData);
+        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', payload, {
+          timeout: 60000
+        });
 
-          const payload = {
-            mensaje: message,
-            imagen: image,
-            csv_data: generatedCsvData,
-            user_id: userId,
-          };
-
-          const response = await axios.post(
-            'https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/procesar', // Reemplaza con tu URL real
-            payload,
+        if (response.status === 200) {
+          console.log(response.data);
+          console.log('userId before API call:', userId);
+          await axios.post(`https://mpwzmn3v75.execute-api.eu-west-3.amazonaws.com/qr/putstep?user_id=${userId}`, 
+            {},  // Empty body
             {
-              timeout: 60000,
+              headers: {
+                'Content-Type': 'application/json'
+              }
             }
           );
-
-          if (response.status === 200) {
-            setIsSending(true);
-            const totalTime = calculateTotalTime(phoneNumbers.length);
-            setTimeLeft((totalTime / 60).toFixed(2));
-            startProgress(totalTime);
-          } else if (response.status === 400) {
-            const { error } = response.data;
-            setErrorMessage(`${error}. Contacta con nosotros en info@betalky.com`);
-            setIsSending(false);
-          }
-        } else {
-          console.error('Error al obtener los contactos de los grupos.');
-          setErrorMessage('Error al obtener los contactos de los grupos.');
+          // Iniciar el progreso después de la respuesta del servidor
+          setIsSending(true);
+          const totalTime = calculateTotalTime(numPhoneNumbers);
+          setTimeLeft(totalTime / 60);
+          startProgress(totalTime);
+        } else if (response.status === 400) {
+          const { error } = response.data;
+          setErrorMessage(`${error}. Contacta con nosotros en info@betalky.com`);
+          setIsSending(false);
         }
       } catch (error) {
-        console.error('Error en el proceso de envío de mensajes:', error);
-        setErrorMessage(`Error al enviar los mensajes: ${error.response?.data?.error || error.message}`);
+        console.error('Error al enviar los mensajes:', error);
+        console.error('Detalles del error:', error.response?.data);
+        setErrorMessage(`Error al enviar los mensajes: ${error.response?.data?.error || error.message}. Contacta con nosotros en info@betalky.com`);
         setIsSending(false);
       } finally {
         setIsProcessing(false);
@@ -188,88 +289,102 @@ function GroupMessageSender() {
     }
   };
 
+  // Función para confirmar la pausa o reanudación
   const confirmPauseResume = async () => {
     setShowConfirmation(false);
 
     try {
-      const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
-      const userId = userAttributes.sub;
+      const userAttributesStr = localStorage.getItem('userAttributes');
+      if (!userAttributesStr) {
+        console.error('User attributes not found in localStorage');
+        setErrorMessage('No se encontraron atributos de usuario. Por favor, inicia sesión nuevamente.');
+        return;
+      }
+      const userAttributes = JSON.parse(userAttributesStr);
+      const userId = userAttributes?.sub;
+      if (!userId) {
+        console.error('User ID not found in localStorage');
+        setErrorMessage('No se encontró el ID de usuario. Por favor, inicia sesión nuevamente.');
+        return;
+      }
 
       if (!isPaused) {
-        // Pausar
-        const response = await axios.post(
-          'https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/pausarex', // Reemplaza con tu URL real
-          {
-            user_id: userId
-          },
-          {
-            timeout: 60000
-          }
-        );
+        // Pausar el envío
+        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/pausarex', {
+          user_id: userId
+        }, {
+          timeout: 60000
+        });
         if (response.status === 200) {
           setIsPaused(true);
           clearInterval(intervalRef.current);
+        } else {
+          setErrorMessage('Error al pausar el envío de mensajes.');
         }
       } else {
-        // Reanudar
-        const response = await axios.post(
-          'https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/reanudar', // Reemplaza con tu URL real
-          {
-            mensaje: message,
-            imagen: image,
-            csv_data: csvData,
-            user_id: userId
-          },
-          {
-            timeout: 60000
-          }
-        );
+        // Reanudar el envío
+        const response = await axios.post('https://3iffjctlw9.execute-api.eu-west-3.amazonaws.com/etapa1/reanudar', {
+          mensaje: message,
+          imagen: image,
+          csv_data: csvData,
+          user_id: userId
+        }, {
+          timeout: 60000
+        });
 
         if (response.status === 200) {
           setIsPaused(false);
-          const numContacts = csvData.split('\n').length - 1;
-          const totalTime = calculateTotalTime(numContacts);
-          setTimeLeft((totalTime / 60).toFixed(2));
-          startProgress(totalTime, progress);
+          const totalTime = calculateTotalTime(numPhoneNumbers);
+          setTimeLeft(totalTime / 60);
+          startProgress(totalTime, progress); // Reanudar desde el progreso actual
+        } else {
+          setErrorMessage('Error al reanudar el envío de mensajes.');
         }
       }
     } catch (error) {
       console.error('Error al pausar/reanudar el envío:', error);
-      alert(`Error al pausar/reanudar el envío: ${error.message}`);
+      setErrorMessage(`Error al pausar/reanudar el envío: ${error.response?.data?.error || error.message}`);
     } finally {
       setIsResuming(false);
     }
   };
 
+  // Función para cancelar la pausa o reanudación
   const cancelPauseResume = () => {
     setShowConfirmation(false);
     setIsResuming(false);
   };
 
+  // Efecto para limpiar el intervalo al desmontar el componente
+  useEffect(() => {
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  // Efecto para manejar la pausa y reanudación del envío
   useEffect(() => {
     if (isPaused) {
       clearInterval(intervalRef.current);
     } else if (isSending && !isPaused) {
-      const numContacts = csvData.split('\n').length - 1;
-      const totalTime = calculateTotalTime(numContacts);
+      const totalTime = calculateTotalTime(numPhoneNumbers);
       startProgress(totalTime, progress);
     }
 
     return () => clearInterval(intervalRef.current);
   }, [isPaused]);
 
+  // Función para cerrar el mensaje de error
   const closeErrorMessage = () => {
     setErrorMessage('');
   };
 
-  const isButtonDisabled = (!isSending && (message.trim().length === 0 || selectedGroups.length === 0)) || isResuming || isProcessing;
+  // Determinar si el botón de enviar está deshabilitado
+  const isSendButtonDisabled = (!isSending && (message.trim().length === 0 || numPhoneNumbers === 0)) || isResuming || isProcessing;
 
   return (
     <div className="group-message-sender-container">
       <h2>Envío de Mensajes a Grupos</h2>
-      <MessageForm setMessage={setMessage} />
-      <ImageUploader setImage={setImage} />
-
+      
+      {/* Selección de grupos */}
       <div className="dropdown-container">
         <input
           type="text"
@@ -287,13 +402,43 @@ function GroupMessageSender() {
                 className={`dropdown-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => toggleGroupSelection(group)}
               >
-                {group.name}
+                <div className={`selection-circle ${isSelected ? 'selected-circle' : ''}`}></div>
+                <span className="group-name">{group.name}</span>
               </div>
             );
           })}
         </div>
       </div>
 
+      {/* Grupos seleccionados */}
+      <div className="selected-groups-container">
+        {selectedGroups.map(group => (
+          <div key={group.id} className="selected-group">
+            <span className="selected-group-name">{group.name}</span>
+            <button className="remove-button" onClick={() => setSelectedGroups(selectedGroups.filter(g => g.id !== group.id))}>×</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Botón para obtener contactos */}
+      <div className="fetch-contacts-container">
+        <button
+          onClick={handleFetchContacts}
+          disabled={isFetchingContacts || selectedGroups.length === 0}
+          className="fetch-contacts-button"
+        >
+          {isFetchingContacts ? 'Obteniendo Contactos...' : 'Obtener Contactos'}
+        </button>
+      </div>
+
+      {/* Resumen de contactos obtenidos */}
+      {numPhoneNumbers > 0 && (
+        <div className="contacts-summary">
+          <p>Se han obtenido <strong>{numPhoneNumbers}</strong> números de teléfono de los grupos seleccionados.</p>
+        </div>
+      )}
+
+      {/* Mensaje de error */}
       {errorMessage && (
         <div className="error-message">
           {errorMessage}
@@ -301,21 +446,33 @@ function GroupMessageSender() {
         </div>
       )}
 
-      <button onClick={handleAction} disabled={isButtonDisabled}>
+      {/* Formulario para el mensaje y la imagen */}
+      <MessageForm setMessage={setMessage} />
+      <ImageUploader setImage={setImage} />
+
+      {/* Botón para enviar mensajes */}
+      <button
+        onClick={handleSendMessages}
+        disabled={isSendButtonDisabled}
+        className="send-messages-button"
+      >
         {isProcessing ? 'Procesando...' : isSending ? (isPaused ? 'Reanudar' : 'Pausar') : 'Enviar Mensaje'}
       </button>
 
+      {/* Barra de progreso */}
       {isSending && (
         <div className="progress-bar-container">
           <ProgressBar
             percentage={progress}
             timeLeft={timeLeft}
-            onPauseClick={handleAction}
+            onPauseClick={handleSendMessages}
             isPaused={isPaused}
+            isResuming={isResuming}
           />
         </div>
       )}
 
+      {/* Modal de confirmación para pausar/reanudar */}
       {showConfirmation && (
         <ConfirmationModal
           message={confirmationMessage}

@@ -15,33 +15,33 @@ function GroupMessageSender() {
   const [groups, setGroups] = useState([]);
   const [filteredGroups, setFilteredGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
-  
+
   // Estados para gestionar los contactos y el CSV
   const [csvData, setCsvData] = useState(null);
   const [numPhoneNumbers, setNumPhoneNumbers] = useState(0);
   const [isFetchingContacts, setIsFetchingContacts] = useState(false);
-  
+
   // Estados para gestionar el envío de mensajes
   const [isSending, setIsSending] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isResuming, setIsResuming] = useState(false);
-  
+
   // Estados para la barra de progreso y tiempos
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
-  
+
   // Estados para manejar modales y mensajes de error
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   // Estado para la búsqueda de grupos
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Referencia para el intervalo de la barra de progreso
   const intervalRef = useRef(null);
-  
+
   // Hook para la navegación
   const navigate = useNavigate();
 
@@ -162,10 +162,14 @@ function GroupMessageSender() {
         const generateCsvData = (phoneNumbers) => {
           let csv = 'Nombre;Teléfono\n';  // Encabezado de las columnas
           phoneNumbers.forEach(phone => {
-            csv += `,${phone}\n`;  // Añade una coma en la columna "Nombre" y luego el número de teléfono en "Teléfono"
+            csv += `,;${phone}\n`;  // Añade una coma y punto y coma antes del número de teléfono
           });
           return csv;
         };
+
+        const generatedCsvData = generateCsvData(phoneNumbers);
+        setCsvData(generatedCsvData);
+        setNumPhoneNumbers(phoneNumbers.length);
       } else {
         console.error('Error al obtener los contactos de los grupos.');
         setErrorMessage('Error al obtener los contactos de los grupos.');
@@ -182,7 +186,7 @@ function GroupMessageSender() {
   const generateCsvData = (phoneNumbers) => {
     let csv = 'Nombre;Teléfono\n';
     phoneNumbers.forEach(phone => {
-      csv += `,${phone}\n`; // Nombre vacío, solo número
+      csv += `,;${phone}\n`; // Nombre vacío, punto y coma, número
     });
     return csv;
   };
@@ -192,6 +196,20 @@ function GroupMessageSender() {
 
   // Función para iniciar la barra de progreso
   const startProgress = (totalTime, initialProgress = 0) => {
+    if (totalTime <= 0) {
+      console.error('Total time must be greater than 0');
+      setProgress(100);
+      setTimeLeft(0);
+      setIsSending(false);
+      navigate('/resumen-envio', {
+        state: {
+          horaEnvio: new Date().toLocaleTimeString(),
+          numMensajes: numPhoneNumbers
+        }
+      });
+      return;
+    }
+
     let timeElapsed = (initialProgress / 100) * totalTime;
 
     intervalRef.current = setInterval(() => {

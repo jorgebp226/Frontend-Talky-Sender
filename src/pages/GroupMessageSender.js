@@ -35,7 +35,7 @@ function GroupMessageSender() {
 
       try {
         const response = await axios.get(
-          'https://your-api-url.com/groups', // Reemplaza con tu URL real
+          'https://42zzu49wqg.execute-api.eu-west-3.amazonaws.com/whats/gupos', // Reemplaza con tu URL real
           {
             params: { user_id: userId },
             headers: { 'Content-Type': 'application/json' }

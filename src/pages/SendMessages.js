@@ -136,6 +136,21 @@ const CloseButton = styled.button`
   margin-left: 20px;
 `;
 
+const TabContainer = styled.div`
+  display: flex;
+  margin-bottom: 20px;
+`;
+
+const Tab = styled.button`
+  padding: 10px 20px;
+  background-color: ${props => props.active ? '#3b82f6' : '#f0f0f0'};
+  color: ${props => props.active ? 'white' : 'black'};
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+  border-radius: 5px;
+`;
+
 function SendMessages() {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
@@ -151,6 +166,9 @@ function SendMessages() {
   const [errorMessage, setErrorMessage] = useState('');
   const intervalRef = useRef(null);
   const navigate = useNavigate();
+  const [contactSource, setContactSource] = useState('excel'); // 'excel' or 'groups'
+  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [groupContactsData, setGroupContactsData] = useState(null);
 
   const calculateTotalTime = (csvData) => {
     const numRows = csvData.split('\n').length;
@@ -312,6 +330,67 @@ function SendMessages() {
 
   const isButtonDisabled = (!isSending && (message.length === 0 || !csvData)) || isResuming || isProcessing;
 
+  const handleContactSourceChange = (source) => {
+    setContactSource(source);
+    setCsvData(null);
+    setSelectedGroups([]);
+    setGroupContactsData(null);
+  };
+
+  const handleGroupSelection = (groups) => {
+    setSelectedGroups(groups);
+  };
+
+  const handleFetchGroupContacts = async () => {
+    if (selectedGroups.length === 0) {
+      setErrorMessage('Por favor, selecciona al menos un grupo.');
+      return;
+    }
+    setErrorMessage('');
+    setIsProcessing(true);
+
+    try {
+      const userAttributes = JSON.parse(localStorage.getItem('userAttributes'));
+      const userId = userAttributes.sub;
+
+      const groupIds = selectedGroups.map(group => group.id);
+
+      const response = await axios.post(
+        'https://940bsd6v9a.execute-api.eu-west-3.amazonaws.com/groups/get_members',
+        {
+          user_id: userId,
+          groupIds: groupIds,
+        }
+      );
+
+      if (response.status === 200) {
+        const phoneNumbers = response.data.phoneNumbers;
+        if (!phoneNumbers || !Array.isArray(phoneNumbers)) {
+          throw new Error('Formato de respuesta inválido: phoneNumbers no está presente o no es una matriz.');
+        }
+
+        const csvData = generateCsvData(phoneNumbers);
+        setGroupContactsData(csvData);
+        setCsvData(csvData);
+      } else {
+        setErrorMessage('Error al obtener los contactos de los grupos.');
+      }
+    } catch (error) {
+      console.error('Error fetching group contacts:', error);
+      setErrorMessage(`Error al obtener los contactos: ${error.response?.data?.error || error.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const generateCsvData = (phoneNumbers) => {
+    let csv = 'Nombre;Teléfono\n';
+    phoneNumbers.forEach(phone => {
+      csv += `,;${phone}\n`;
+    });
+    return csv;
+  };
+
   return (
     <>
       <GlobalStyle />
@@ -323,12 +402,38 @@ function SendMessages() {
         {errorMessage && (
           <ErrorMessage>
             {errorMessage}
-            <CloseButton onClick={closeErrorMessage}>&times;</CloseButton>
+            <CloseButton onClick={() => setErrorMessage('')}>&times;</CloseButton>
           </ErrorMessage>
         )}
         <MessageForm setMessage={setMessage} />
         <ImageUploader setImage={setImage} />
-        <ContactsUploader setCsvData={setCsvData} />
+        
+        <TabContainer>
+          <Tab 
+            active={contactSource === 'excel'} 
+            onClick={() => handleContactSourceChange('excel')}
+          >
+            Excel
+          </Tab>
+          <Tab 
+            active={contactSource === 'groups'} 
+            onClick={() => handleContactSourceChange('groups')}
+          >
+            Grupos
+          </Tab>
+        </TabContainer>
+        
+        {contactSource === 'excel' ? (
+          <ContactsUploader setCsvData={setCsvData} />
+        ) : (
+          <GroupContactSelector 
+            onGroupSelection={handleGroupSelection}
+            onFetchContacts={handleFetchGroupContacts}
+            isProcessing={isProcessing}
+            groupContactsData={groupContactsData}
+          />
+        )}
+        
         <ButtonContainerWrapper>
           {isSending && (
             <ProgressBar

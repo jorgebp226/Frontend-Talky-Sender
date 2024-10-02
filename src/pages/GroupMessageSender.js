@@ -201,7 +201,7 @@ function GroupMessageSender() {
       setProgress(100);
       setTimeLeft(0);
       setIsSending(false);
-      navigate('/resumen-envio', {
+      navigate('/resumen', {
         state: {
           horaEnvio: new Date().toLocaleTimeString(),
           numMensajes: numPhoneNumbers
@@ -403,7 +403,7 @@ function GroupMessageSender() {
 
   return (
     <div className="group-message-sender-container">
-      <h2>Envío de Mensajes a Grupos</h2>
+      <h2>Envío de Mensajes a Miembros de Grupos</h2>
       
       {/* Selección de grupos */}
       <div className="dropdown-container">

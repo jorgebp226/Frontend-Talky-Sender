@@ -15,6 +15,7 @@ const PrivacyPolicy = () => {
           <li>Información de cuenta de WhatsApp: Incluye credenciales generadas con la librería de Bailyes de JavaScript.</li>
           <li>Mensajes: Guardamos de manera segura los mensajes enviados y recibidos a través de su cuenta de WhatsApp.</li>
           <li>Datos de uso: Información sobre cómo utiliza nuestra App, incluyendo análisis de rendimiento de los mensajes.</li>
+          <li>Reseñas de Google My Business: Con el consentimiento del usuario, accedemos a las reseñas de su cuenta de Google My Business para responder a estas y obtener métricas de interacción y satisfacción.</li>
         </ul>
         
         <h2>3. Uso de la Información</h2>
@@ -23,6 +24,7 @@ const PrivacyPolicy = () => {
           <li>Proporcionar y mejorar nuestros servicios.</li>
           <li>Enviar mensajes personalizados a sus clientes.</li>
           <li>Realizar análisis de rendimiento de sus mensajes.</li>
+          <li>Responder a reseñas de Google My Business y analizar métricas de satisfacción.</li>
           <li>Garantizar la seguridad de su cuenta y nuestros servicios.</li>
           <li>Entrenar modelos de aprendizaje automático para mejorar nuestras recomendaciones y métricas.</li>
         </ul>

@@ -15,6 +15,7 @@ const TermsAndConditions = () => {
           <li>Enviar mensajes personalizados a través de WhatsApp.</li>
           <li>Guardar credenciales generadas de manera segura.</li>
           <li>Almacenar de manera segura en MongoDB los mensajes enviados y recibidos para ofrecer análisis de rendimiento.</li>
+          <li>Acceder a reseñas de Google My Business, siempre con el consentimiento del usuario, para responder a estas reseñas y extraer métricas de satisfacción e interacción.</li>
         </ul>
         
         <h2>3. Uso de la App</h2>
@@ -40,7 +41,7 @@ const TermsAndConditions = () => {
         Estos Términos se regirán e interpretarán de acuerdo con las leyes de España. Cualquier disputa relacionada con estos Términos será sometida a la jurisdicción exclusiva de los tribunales de Madrid, España.
 
         <h2>9. Recolección y Uso de Datos</h2>
-        Al utilizar nuestra App, usted acepta que podamos recolectar y utilizar sus datos personales y los datos de sus mensajes de WhatsApp para mejorar nuestros servicios y ofrecer análisis de rendimiento personalizados. Toda la información será manejada de acuerdo con nuestra Política de Privacidad.
+        Al utilizar nuestra App, usted acepta que podamos recolectar y utilizar sus datos personales, así como los datos de sus mensajes de WhatsApp y reseñas de Google My Business (si ha dado su consentimiento para esto) para mejorar nuestros servicios y ofrecer análisis de rendimiento personalizados. Toda la información será manejada de acuerdo con nuestra Política de Privacidad.
 
         <h2>10. Política de Uso Aceptable</h2>
         Usted se compromete a no utilizar la App para enviar mensajes no solicitados o spam, ni para cualquier propósito ilegal o no autorizado. Nos reservamos el derecho de suspender o terminar su cuenta si se detecta un uso indebido de la App.

@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CognitoUserPool } from 'amazon-cognito-identity-js';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 const poolData = {
   UserPoolId: 'eu-west-3_evgrQogwE', // Reemplaza con tu User Pool ID
@@ -8,51 +9,42 @@ const poolData = {
 
 const userPool = new CognitoUserPool(poolData);
 
-export const useUserAttributes = (isAuthenticated) => {
+export const useUserAttributes = () => {
+  const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+  const [attributes, setAttributes] = useState(null);
+
   useEffect(() => {
-    if (!isAuthenticated) {
-      console.log('El usuario no está autenticado todavía.');
+    if (authStatus !== 'authenticated' || !user) {
       return;
     }
 
-    const user = userPool.getCurrentUser();
-    if (!user) {
-      console.error('No se encontró un usuario actualmente autenticado.');
+    const cognitoUser = userPool.getCurrentUser();
+    if (!cognitoUser) {
       return;
     }
 
-    user.getSession((err, session) => {
-      if (err) {
-        console.error('Error al obtener la sesión:', err);
+    cognitoUser.getSession((err, session) => {
+      if (err || !session.isValid()) {
+        console.error('Error de sesión:', err);
         return;
       }
 
-      if (!session.isValid()) {
-        console.error('La sesión no es válida.');
-        return;
-      }
-
-      console.log('La sesión es válida:', session.isValid());
-
-      user.getUserAttributes((err, attributes) => {
+      cognitoUser.getUserAttributes((err, userAttributes) => {
         if (err) {
-          console.error('Error al obtener los atributos del usuario:', err);
+          console.error('Error al obtener atributos:', err);
           return;
         }
 
-        if (!attributes) {
-          console.error('No se encontraron atributos para el usuario.');
-          return;
-        }
-
-        const attrs = attributes.reduce((acc, attribute) => {
-          acc[attribute.Name] = attribute.Value;
+        const attrs = userAttributes.reduce((acc, attr) => {
+          acc[attr.Name] = attr.Value;
           return acc;
         }, {});
 
         localStorage.setItem('userAttributes', JSON.stringify(attrs));
-        //console.log('Atributos del usuario:', attrs); // Log aquí
+        setAttributes(attrs);
       });
     });
-  }, [isAuthenticated]);
+  }, [user, authStatus]);
+
+  return attributes;
 };

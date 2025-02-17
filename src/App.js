@@ -89,62 +89,48 @@ function AppContent() {
 }
 
 function RequireAuth({ children }) {
-  const { user } = useAuthenticator((context) => [context.user]);
+  const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
   const location = useLocation();
   const [loading, setLoading] = React.useState(true);
   const [isPaid, setIsPaid] = React.useState(false);
 
   React.useEffect(() => {
     const checkPaymentStatus = async () => {
-      if (user) {
+      if (authStatus !== 'authenticated' || !user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
         const userAttributesStr = localStorage.getItem('userAttributes');
-        if (!userAttributesStr) {
-          console.error('User attributes not found in local storage');
+        const userAttributes = userAttributesStr ? JSON.parse(userAttributesStr) : null;
+        
+        if (!userAttributes?.sub) {
+          console.error('ID de usuario no encontrado');
           setLoading(false);
           return;
         }
 
-        let userAttributes;
-        try {
-          userAttributes = JSON.parse(userAttributesStr);
-        } catch (error) {
-          console.error('Failed to parse user attributes from local storage:', error);
-          setLoading(false);
-          return;
-        }
-
-        const userId = userAttributes.sub;
-        if (userId) {
-          localStorage.setItem('userId', userId);
-          try {
-            const response = await axios.get(`https://rw8emddjlb.execute-api.eu-west-3.amazonaws.com/xr21321//user`, {
-              params: { userId: userId }
-            });
-            const paymentStatus = response.data.PaymentStatus;
-            console.log(paymentStatus);
-            setIsPaid(paymentStatus === 'Active');
-          } catch (error) {
-            console.error('Error checking payment status', error);
-          } finally {
-            setLoading(false);
-          }
-        } else {
-          console.error('User ID not found');
-          setLoading(false);
-        }
-      } else {
+        const response = await axios.get(`https://rw8emddjlb.execute-api.eu-west-3.amazonaws.com/xr21321//user`, {
+          params: { userId: userAttributes.sub }
+        });
+        
+        setIsPaid(response.data.PaymentStatus === 'Active');
+      } catch (error) {
+        console.error('Error al verificar estado de pago:', error);
+      } finally {
         setLoading(false);
       }
     };
 
     checkPaymentStatus();
-  }, [user]);
+  }, [user, authStatus]);
 
   if (loading) {
     return <div>Cargando...</div>;
   }
 
-  if (!user) {
+  if (authStatus !== 'authenticated') {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

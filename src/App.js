@@ -32,6 +32,7 @@ import axios from 'axios';
 
 // Importa el nuevo componente
 import GroupSelectorPage from './pages/GroupSelectorPage';
+import Chats from './pages/Chats';
 
 Amplify.configure(awsExports);
 I18n.setLanguage('es');
@@ -81,6 +82,7 @@ function AppContent() {
 
           {/* Agrega la nueva ruta para GroupSelectorPage */}
           <Route path="/group-selector" element={<RequireAuth><GroupSelectorPage /></RequireAuth>} />
+          <Route path="/chats" element={<RequireAuth><Chats /></RequireAuth>} />
         </Routes>
       </main>
       <Footer />
